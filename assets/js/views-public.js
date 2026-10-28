@@ -33,8 +33,8 @@
     title: '沒有年資，也有證明',
     html: `<div class="final-home wrap">
       <section class="home-intro">
-        <div class="home-copy"><h1>沒有年資，<br>也有證明。</h1><p class="home-lead">市府出題、職人把關，做完拿到市府可以查驗的工單履歷。</p></div>
-        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><h2>青年市集：AI 算了 7 人，對嗎？</h2><p>接下主管的工單，親手核對一次。</p></div></div>
+        <div class="home-copy"><h1>沒有年資，<br>也有證明。</h1><p class="home-lead">提案規劃：市府出題、職人把關，通過答辯後取得可查驗的工單履歷。</p></div>
+        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><span>工單 #0142</span><h2>青年市集：AI 算了 7 人，對嗎？</h2><p>接下主管的工單，親手核對一次。</p></div></div>
         <div class="home-action"><a class="btn btn-accent" href="#/try">開始 60 秒體驗 ${icon('arrowRight')}</a><p>不用註冊，不用輸入資料。</p></div>
       </section>
       <section class="home-evidence"><div><h2>把「我會」變成做過的證據。</h2><p>留下怎麼抓錯、怎麼調整、為什麼這樣做。<br>完整工單經職人複核，再交給企業看。</p></div><a class="btn btn-ghost" href="#/verify/TPE-PW-2026-BA58C8">看一張查驗範例 ${icon('arrowRight')}</a></section>
@@ -56,7 +56,7 @@
       const st = H.stateOf(t);
       if (t.status === 'locked' && l2open) t = Object.assign({}, t, { status: 'soon', unlocked: true });
       const cls = 'q-l' + t.level;
-      const rar = t.level === 1 ? 'L1 見習委託' : t.level === 2 ? 'L2 企業挑戰' : 'L3 正式錄用';
+      const rar = t.level === 1 ? 'L1 見習工單' : t.level === 2 ? 'L2 企業挑戰' : 'L3 正式錄用';
       const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? '<span class="q-state" style="color:var(--teal)">進行中 ▶</span>' : t.status === 'open' ? '<span class="q-state">接單 ▶</span>' : t.status === 'soon' ? (t.unlocked ? '<span class="tag tag-ok">已解鎖・企業出題中</span>' : '<span class="tag tag-warn">即將開放</span>') : '';
       const inner = `<div class="q-stripe"></div><div class="q-body">
           <div class="q-top"><span class="rar">${rar}</span><span class="ticket-id">${t.code}</span></div>
@@ -91,7 +91,7 @@
         </div>
 
         <details class="lobby-tiers mt24"><summary>三個階段與解鎖進度</summary><div class="tiers mt16">
-          <div class="px-card tier cur">${px.sprite('scroll', { size: 40 })}<div><div class="rk">TIER 01・開放中</div><div class="px px-22">見習委託</div><p>市府與企業的歷史工單，完成即核發工單履歷</p></div></div>
+          <div class="px-card tier cur">${px.sprite('scroll', { size: 40 })}<div><div class="rk">TIER 01・開放中</div><div class="px px-22">見習工單</div><p>市府與企業的歷史工單，首張計分工單須通過答辯</p></div></div>
           <div class="px-card tier ${l2open ? '' : 'locked'}">${px.sprite('chest', { size: 40 })}<div><div class="rk">TIER 02・${l2open ? '已解鎖' : `完成 ${l1done}/2 張 L1・平均 A 解鎖`}</div><div class="px px-22">企業挑戰</div><p>企業自己出題篩人，表現好直接邀面試</p></div></div>
           <div class="px-card tier locked">${px.sprite('star', { size: 40 })}<div><div class="rk">TIER 03・企業邀請制</div><div class="px px-22">正式錄用</div><p>面試或實習，接上市府既有的實習補助</p></div></div>
         </div>
@@ -99,11 +99,11 @@
         </details><div class="lobby-grid mt24">
           <div>
             <div class="row-between">
-              <div class="tabs" role="tablist">${[['all', '全部委託'], ['gov', '市府局處'], ['co', '合作企業'], ['done', '已完成']].map(([k, n]) => `<button data-f="${k}" class="${k === 'all' ? 'on' : ''}">${n}</button>`).join('')}</div>
-              <label class="search">${icon('search')}<input class="input" placeholder="搜尋委託、技能、出題單位" aria-label="搜尋"></label>
+              <div class="tabs" role="tablist">${[['all', '全部工單'], ['gov', '市府局處'], ['co', '合作企業'], ['done', '已完成']].map(([k, n]) => `<button data-f="${k}" class="${k === 'all' ? 'on' : ''}">${n}</button>`).join('')}</div>
+              <label class="search">${icon('search')}<input class="input" placeholder="搜尋工單、技能、出題單位" aria-label="搜尋"></label>
             </div>
             <div class="quests mt24">${APP.TASKS.map(quest).join('')}</div>
-            <div class="empty hide" data-empty><div class="big-ico">${icon('search')}</div><b>沒有符合的委託</b></div>
+            <div class="empty hide" data-empty><div class="big-ico">${icon('search')}</div><b>沒有符合的工單</b></div>
           </div>
           <aside class="stack" style="--gap:28px">
             <div class="px-card px-panel"><h4 class="px px-22">${px.sprite('star', { size: 22 })}本週進步榜</h4>
@@ -186,7 +186,7 @@
                 <dt>出題單位</dt><dd>${esc(t.org)}</dd>
                 <dt>職能</dt><dd>${esc(t.role)}</dd>
                 <dt>預估時間</dt><dd>${t.hours} 小時</dd>
-                <dt>難度</dt><dd>L${t.level} 見習委託</dd>
+                <dt>難度</dt><dd>L${t.level} 見習工單</dd>
                 <dt>獎勵</dt><dd>+${H.xpFor(t)} XP・工單履歷</dd>
                 <dt>已完成</dt><dd>${t.done.toLocaleString()} 人（示範）</dd>
               </dl>
@@ -217,21 +217,19 @@
     const rows = APP.LEARN.slice().sort((a, b) => b.aRate - a.aRate);
     return {
       title: '學習資源成效榜',
-      html: `<div class="wrap wrap-narrow page">
-        <div class="eyebrow">學習資源成效榜（示範）</div>
-        <h1 class="section-title mt8">貴的課，不一定有用。</h1>
-        <p class="section-sub">青年完成工單時，可以選填「我準備時用了哪些學習資源」。平台彙整後公開：用過這項資源的人，工單達到 A 級以上的比例是多少。課程好不好，交給成果說話。</p>
-        <div class="card mt32">
-          <div class="learn-row head"><span>學習資源</span><span>費用</span><span>使用人數</span><span>工單 A 級以上比例</span></div>
-          ${rows.map(l => `<div class="learn-row"><div><b>${esc(l.n)}</b><div class="faint" style="font-size:12px">${esc(l.type)}${l.small ? '・<span style="color:var(--red)">樣本不足，僅供參考</span>' : ''}</div></div>
-            <span>${l.price ? 'NT$' + l.price.toLocaleString() : '<span class="tag tag-ok">免費</span>'}</span><span class="tnum">${l.users.toLocaleString()}</span>
-            <div class="meter"><div class="tr"><div class="fi" style="width:${l.aRate * 2}%;${l.small ? 'opacity:.45' : ''}"></div></div><b>${l.aRate}%</b></div></div>`).join('')}
+      html: `<div class="wrap wrap-narrow page learn-page">
+        <p class="sample-notice">階段 3 功能・示範</p>
+        <h1 class="section-title mt8">學習資源成效榜</h1>
+        <p class="section-sub">以資源類型公開工單表現，幫青年比較學習路徑。個別課程僅在業者自願參與時列出。</p>
+        <p class="try-note">以下人數與比例皆為虛構，用來展示呈現方式，不代表各類資源的實際成效。</p>
+        <div class="card mt24">
+          <div class="learn-row head"><span>資源類型</span><span>使用人數</span><span>工單 A 級以上比例</span></div>
+          ${rows.map(l => `<div class="learn-row"><div><b>${esc(l.n)}</b>${l.small ? '<p class="try-note">樣本不足，僅供參考</p>' : ''}</div>
+            <span class="tnum">${l.users.toLocaleString()} 人</span>
+            <div class="meter"><div class="tr"><div class="fi" style="width:${l.aRate}%;${l.small ? 'opacity:.45' : ''}"></div></div><b>${l.aRate}%</b></div></div>`).join('')}
         </div>
-        <p class="faint mt12" style="font-size:12.5px">示範數據，課程名稱皆為虛構。比例為相關性而非因果，正式版會以入門工單作為前測，比較「前後進步幅度」，並對樣本少於 100 人的資源標示「樣本不足」。</p>
-        <div class="grid g2 mt48">
-          <div class="card card-pad"><div class="big-ico" style="background:var(--accent-soft)">${px.sprite('scroll', { size: 24 })}</div><h3 class="mt12" style="font-size:17px">對青年：先看成效再付錢</h3><p class="muted mt8" style="font-size:14px">分辨不出課程好壞的人，最容易被高價速成班吸引。成效榜讓選課有依據。</p></div>
-          <div class="card card-pad"><div class="big-ico" style="background:var(--blue-soft)">${px.sprite('shield', { size: 24 })}</div><h3 class="mt12" style="font-size:17px">對市府：補助依成效核銷</h3><p class="muted mt8" style="font-size:14px">市府的職涯進修補助，可以逐步改成「學員工單表現有提升才全額核銷」，讓公帑流向真正有效的課程。</p></div>
-        </div>
+        <p class="try-note">相關性非因果：使用者背景與學習動機可能不同，不能據此判定資源造成進步。正式版規劃以入門工單作為前測，比較前後進步幅度；樣本少於 100 人會標示「樣本不足」。同一人可使用多種資源，人數不可相加。</p>
+        <p class="mt24">青年可選填準備時使用的資源，把經驗留給下一位；市府可據此了解學習需求，作為後續評估的參考。</p>
       </div>`
     };
   };
@@ -248,7 +246,7 @@
         <ul><li>51.8% 新鮮人最擔心缺乏相關工作經驗。出處：1111 人力銀行，2026。</li>
         <li>34.4% 企業認為新人面試說的和實際表現有落差。出處：yes123，2025。</li>
         <li>「年資」預測工作表現的效度為 .07。出處：Sackett et al., 2022。</li>
-        <li>22–25 歲在高 AI 暴露職業的就業，相對同儕為 −13% → −19%。出處：Stanford Digital Economy Lab，2025 初版 → 2026 修訂。</li>
+        <li>22–25 歲在高 AI 暴露職業的就業，相對同儕為 −13% → −19%。出處：Stanford Digital Economy Lab，2025 初版 → 2026 修訂。描述性發現，非因果推論。</li>
         <li>大學程度失業率 4.56%，全體為 3.41%。出處：主計總處，2026 年 8 月。</li>
         <li>臺北市 25–29 歲失業率 7.8%，全國為 5.77%；2024 年起回升。出處：主計總處，2025 年。</li></ul>
         <p>以上保留原提案引用的數值與出處，與平台中的虛構示範資料分開呈現。</p>
@@ -256,7 +254,7 @@
       <div class="card card-pad mt32 prose">
         <h4 style="margin-top:0">三階段</h4>
         <div class="ladder mt12">
-          <div class="cur"><span class="lvl lvl-1">L1</span><b>見習委託</b><p>市府「出題工作室」製作的去機密化歷史工單，開放申請，通過答辯即核發工單履歷。</p></div>
+          <div class="cur"><span class="lvl lvl-1">L1</span><b>見習工單</b><p>市府「出題工作室」製作去機密化歷史工單。首張計分工單必答辯、後續抽審 30%；工單履歷標示「答辯驗證」或「AI 初評」，能力判定以答辯驗證為準。</p></div>
           <div><span class="lvl lvl-2">L2</span><b>企業挑戰</b><p>企業以已結案業務出題篩選人才，限 3 小時並由企業支付參與津貼；優異者直接邀面試。</p></div>
           <div><span class="lvl lvl-3">L3</span><b>銜接聘用</b><p>面試、實習或試用。企業導師只在這一階段投入，並接上市府既有實習補助。</p></div>
         </div>
@@ -265,21 +263,21 @@
           <li><b>公信力：</b>私人平台的證書跟「AI 證照」一樣難以被企業信任；市府核發、可查驗的工單履歷才有分量。</li>
           <li><b>規則制定：</b>去識別化標準、營業秘密保護、無薪勞動的界線，都需要公部門訂規則。</li>
           <li><b>冷啟動：</b>市府本身就是最大的出題方。局處的已結案業務，就是第一批影子工單。</li>
-          <li><b>整合既有計畫：</b>作為青年局「以戰代訓」的評量模組，工單履歷併入既有的數位職能護照；L3 接上實習補助與就業服務站。</li>
+          <li><b>整合既有計畫：</b>建議作為以戰代訓的評量模組，工單履歷可納入數位職能護照（待青年局評估）；L3 建議銜接既有實習補助與就業服務站。</li>
         </ul>
         <h4>防弊與權益保障</h4>
         <ul>
           <li><b>不是免費勞動：</b>只用已結案（6 個月以上）或模擬的工單，成果不得商用，著作權歸青年。</li>
-          <li><b>防代做：</b>第一張計分工單必答辯、之後抽審；每張工單 5 組變體隨機指派、每月替換一組；完整保留作答過程紀錄。</li>
+          <li><b>防代做：</b>首張計分工單必答辯、後續抽審 30%；異常或企業邀約面試前亦須答辯；每張工單 5 組變體隨機指派、每月替換一組；完整保留作答過程紀錄。</li>
           <li><b>不增加焦慮：</b>第一張可用練習模式；答辯超時不扣分；成績只有本人看得到，公開哪幾張由自己決定。</li>
           <li><b>個資與營業秘密：</b>企業上架前須通過去識別化檢核，由市府審查後才公開。</li>
           <li><b>公平：</b>預設「盲審模式」，企業看不到學校，只看工單表現。</li>
         </ul>
         <h4>常見問題</h4>
         <p><b>用 AI 不就是作弊？</b><br>不是。職場本來就會用 AI。我們評的是你能不能發現 AI 的錯、能不能為結果負責。完全不揭露 AI 使用才會扣分。</p>
-        <p><b>企業為什麼要出題？</b><br>企業只要交出已結案文件、接受 1 小時訪談，市府出題工作室負責其餘工作。換到的是一群做過自家業務、能直接比較的候選人：L1 工單履歷取代電話初篩，L2 取代作業測驗，省下一輪面試。</p>
+        <p><b>企業為什麼要出題？</b><br>企業只要交出已結案文件、接受 1 小時訪談，市府出題工作室負責其餘工作。換到的是一群做過自家業務、能直接比較的候選人：L1 是電話初篩以外的能力訊號；L2 可替代或補充作業測驗。</p>
         <p><b>AI 不是一下就能抓到錯誤嗎？</b><br>每張工單上架前會先用主流 AI 實測，AI 自己能發現的錯誤不計分；計分的錯誤必須跨文件比對、或依主管給的情境判斷才看得出來。</p>
-        <p><b>沒有自主學習習慣的人會參加嗎？</b><br>這正是遊戲化與戰隊機制的目的；另外會和臺北市立大學等學校合作，把工單變成課程作業。</p>
+        <p><b>沒有自主學習習慣的人會參加嗎？</b><br>這正是遊戲化與戰隊機制的目的；另建議與臺北市立大學等學校合作，把工單融入課程作業。</p>
       </div>
       <div class="row mt24"><a class="px-btn" href="#/tasks">進入公會大廳 ▶</a><a class="btn btn-ghost" href="#/gov">${icon('chart')}看市府儀表板</a></div>
     </div>`

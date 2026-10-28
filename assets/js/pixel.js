@@ -3,7 +3,7 @@
   const PAL = {
     k: '#1b1b22', y: '#ffc93c', o: '#f08a24', w: '#ffffff', s: '#f5c9a0', h: '#3b2a20',
     b: '#2a78d6', t: '#1baf7a', r: '#e34948', g: '#9aa0a6', p: '#f4e6c4', n: '#8a5a2b',
-    v: '#6b55d6', d: '#1c3f7a', l: '#86b6ef', m: '#d9d4c7'
+    v: '#1c3f7a', d: '#1c3f7a', l: '#86b6ef', m: '#d9d4c7'
   };
 
   const S = {

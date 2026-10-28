@@ -334,12 +334,12 @@
     const tipDone = (s.tips || []).some(x => x.task === id);
     const pass = r.grade !== 'C' && !a.practice;
     return {
-      title: '委託完成',
+      title: '工單完成',
       html: `<div class="wrap page">
         <div class="clear-banner px-edge">${px.skyline()}
           <div class="float-stars">${stars.map(([x, y], i) => `<span style="left:${x}%;top:${y}%;animation-delay:${i * .25}s">${px.sprite('star', { size: 16 + (i % 3) * 6 })}</span>`).join('')}</div>
           <div class="clear-in">
-            <div><div class="eyebrow" style="color:#ffc93c">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? '委託完成！' : '差一點！'}</h1><p>${esc(t.title)}</p>
+            <div><div class="eyebrow" style="color:#ffc93c">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? '工單完成！' : '差一點！'}</h1><p>${esc(t.title)}</p>
               <div class="row mt16">${r.badges.map(b => `<span title="${esc(APP.BADGES[b].n)}">${px.sprite(APP.px.BADGE_SPRITE[b], { size: 30 })}</span>`).join('')}</div></div>
             <div class="clear-score"><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? '#7fe0c9' : a.practice ? '#ffc93c' : '#ff8a8a'};margin-bottom:14px">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="num">${r.total}</div><div class="xpg px px-22">+${r.xp} XP${r.levelUp ? ` <span class="lvup">LEVEL UP！</span>` : ''}</div></div>
           </div>

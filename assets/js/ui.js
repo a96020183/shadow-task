@@ -193,10 +193,10 @@
     return `<div class="chart-box"><svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${data.map(d => d.n + ' ' + d.v).join('、')}">${g}</svg><div class="tip"></div></div>`;
   }
 
-  function hbars(data, { unit = '' } = {}) {
-    const max = Math.max(...data.map(d => d.v));
+  function hbars(data, { unit = '', max: scaleMax } = {}) {
+    const max = scaleMax || Math.max(...data.map(d => d.v));
     return `<div class="chart-box">${data.map(d => `<div class="funnel-row" data-tip="${esc(d.n)}：${d.v.toLocaleString()}${unit}">
-      <span>${esc(d.n)}</span><div><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:24px"><path d="${barPath(0, 0, Math.max(1.5, 100 * d.v / max), 24, 4, 'right')}" fill="var(--series-1)" vector-effect="non-scaling-stroke"/></svg></div><b>${d.v.toLocaleString()}</b></div>`).join('')}<div class="tip"></div></div>`;
+      <span>${esc(d.n)}</span><div><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:24px"><path d="${barPath(0, 0, Math.max(1.5, 100 * d.v / max), 24, 4, 'right')}" fill="var(--series-1)" vector-effect="non-scaling-stroke"/></svg></div><b>${d.v.toLocaleString()}${esc(unit)}</b>${d.target ? `<span class="bar-target">目標 ${esc(d.target)}</span>` : ""}</div>`).join('')}<div class="tip"></div></div>`;
   }
 
   function niceTicks(max) {
@@ -232,5 +232,6 @@
   }
   const verifyURL = (vid, online = false) => (online || location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
 
-  APP.ui = { qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
+  const verifyNotice = () => '<div class="verify-notice"><p class="verify-state">示範查驗頁・非市府核發</p><p>正式版將由臺北市政府青年局核發</p></div>';
+  APP.ui = { verifyNotice, qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
 })();

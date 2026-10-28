@@ -170,8 +170,7 @@ p { margin: 0; }
   background: var(--paper-2); color: var(--ink-2); white-space: nowrap; line-height: 1.6;
 }
 .tag svg { width: 13px; height: 13px; }
-.tag-gov { background: var(--blue-soft); color: var(--blue); }
-.tag-co { background: var(--violet-soft); color: var(--violet); }
+.tag-gov, .tag-co { background: var(--night); color: #fff; }
 .tag-ok { background: var(--teal-soft); color: var(--teal); }
 .tag-warn { background: var(--accent-soft); color: color-mix(in srgb, var(--accent-ink) 70%, var(--ink)); }
 :root[data-theme="dark"] .tag-warn { color: var(--accent); }
@@ -220,7 +219,7 @@ a.ticket:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); bord
   font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .06em; padding: 2px 7px; border-radius: 5px;
   border: 1.5px solid currentColor;
 }
-.lvl-1 { color: var(--teal); } .lvl-2 { color: var(--violet); } .lvl-3 { color: var(--red); }
+.lvl-1 { color: var(--teal); } .lvl-2 { color: var(--ink-2); } .lvl-3 { color: var(--red); }
 
 /* ---------- stamp ---------- */
 .stamp {
@@ -239,9 +238,9 @@ a.ticket:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); bord
   display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; font-family: var(--mono); font-weight: 800;
   font-size: 20px; border: 2px solid currentColor;
 }
-.grade-S { color: var(--violet); background: var(--violet-soft); }
+.grade-S { color: var(--accent-ink); background: var(--accent); }
 .grade-A { color: var(--teal); background: var(--teal-soft); }
-.grade-B { color: var(--blue); background: var(--blue-soft); }
+.grade-B { color: var(--ink-2); background: var(--paper-2); }
 .grade-C { color: var(--red); background: var(--red-soft); }
 .grade.sm { width: 30px; height: 30px; font-size: 14px; border-radius: 8px; border-width: 1.5px; }
 

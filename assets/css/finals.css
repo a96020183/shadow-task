@@ -300,7 +300,7 @@ body[data-route="try"] .mobile-nav, body[data-route="try"] .foot, body[data-rout
 .review-points { border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); margin-top: 24px; padding: 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .review-points b { font-size: 15px; }
 .review-points p { font-size: 15px; margin-top: 6px; line-height: 1.65; }
-.verify-state { font-size: 14px; color: var(--teal); font-weight: 700; }
+.verify-state { font-size: 14px; color: var(--muted); font-weight: 500; }
 .decision-role { margin-top: 10px; font-size: 16px; }
 .decision-meta { font-size: 14px; margin: 20px 0; }
 .decision-dims dl { display: grid; grid-template-columns: repeat(5,1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -378,13 +378,70 @@ input.styled-switch:checked::before { background: var(--teal); transform: transl
   .wo-d > summary { align-items: start; }
   .wo-d > summary .vid { max-width: 100%; }
 }
+/* 第三輪：可獨立截圖的中性體驗紀錄、證據優先的市府頁。 */
+.verify-notice { color: var(--muted); font-size: 14px; line-height: 1.7; }
+.verify-notice p + p { margin-top: 4px; }
+.try-stamp { color: var(--ink-2); }
+.try-record { display: block; margin-top: 20px; padding: 18px; background: var(--card); border: 1px solid var(--line-2); color: var(--ink); text-decoration: none; }
+.try-record:hover { border-color: var(--muted); }
+.try-record h2 { font: 750 19px/1.4 var(--font); }
+.try-record > p { font-size: 14px; margin-top: 6px; }
+.try-record .try-checks { margin: 10px 0 0; }
+.try-record .try-checks li { padding: 8px 0; }
+.try-record .result-mark { color: var(--ink-2); }
+.try-record .try-checks b { font-size: 15px; }
+.try-record .try-checks p { font-size: 13px; }
+.record-verification { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.record-verification > div:first-child { display: grid; gap: 6px; font-size: 13px; }
+.record-verification .mono { font-size: 15px; overflow-wrap: anywhere; }
+.record-verification small, .try-qr small, .verify-bottom small { font: 13px var(--font); color: var(--muted); }
+.record-verification span:last-child { display: flex; align-items: center; gap: 8px; }
+.record-verification svg { width: 16px; height: 16px; }
+.record-qr { flex: none; width: 116px; height: 116px; }
+.record-qr svg { display: block; width: 100%; height: 100%; }
+.verification-level { display: inline-block; width: fit-content; font: 13px/1.5 var(--font); padding: 2px 6px; color: var(--ink-2); background: var(--paper-2); border: 1px solid var(--line-2); }
+.gov-notice { color: var(--muted); font-size: 14px; margin: 8px 0 16px; }
+.gov-evidence { gap: 16px; }
+.evidence-card { padding: 18px 20px; }
+.evidence-card h2, .gov-secondary h3 { font-size: 16px; line-height: 1.5; }
+.evidence-result { display: flex; align-items: baseline; gap: 8px 16px; flex-wrap: wrap; margin-top: 10px; }
+.evidence-result strong { font-size: 25px; font-variant-numeric: tabular-nums; }
+.evidence-result span, .kpi-target { font-size: 14px; color: var(--muted); }
+.evidence-interval { font-size: 14px; margin-top: 8px; }
+.gov-heading { font-size: 18px; margin-bottom: 8px; }
+.gov-page .kpi .value { font-size: 24px; margin: 8px 0; }
+.gov-fairness .funnel-row { grid-template-columns: minmax(0,1fr) minmax(60px,1fr) auto; margin-top: 16px; }
+.bar-target { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+.gov-funnel { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 15px; }
+.gov-funnel th, .gov-funnel td { padding: 10px 0; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.gov-funnel th:first-child { text-align: left; font-weight: 500; }
+.gov-source { color: var(--muted); font-size: 14px; }
+.gov-source a { display: inline-flex; align-items: center; min-height: 44px; }
+.learn-page .learn-row { grid-template-columns: minmax(0,1.4fr) 90px minmax(0,1fr); }
+/* 青年端按鈕共用像素框線；專業端共用平面按鈕。文字連結維持連結外觀。 */
+body:not(.professional) .btn, body:not(.professional) .px-btn { border: 2px solid var(--ink); border-radius: 0; box-shadow: 3px 3px 0 var(--px-drop); }
+body:not(.professional) .btn:hover, body:not(.professional) .px-btn:hover { box-shadow: 3px 3px 0 var(--px-drop); }
+body:not(.professional) .btn:active, body:not(.professional) .px-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--px-drop); }
+body:not(.professional) .btn:disabled, body:not(.professional) .px-btn:disabled { box-shadow: none; border-color: var(--line-2); }
+body.professional .btn, body.professional .px-btn { border: 1px solid transparent; border-radius: 6px; box-shadow: none; font-family: var(--font); }
+body.professional .btn-ghost { border-color: var(--line-2); }
+body.professional .btn:hover, body.professional .px-btn:hover { box-shadow: none; transform: none; }
+@media (max-width:760px) {
+  .gov-evidence { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .professional .gov-page .grid.g3 { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .evidence-card { padding: 14px 16px; }
+  .evidence-card .try-note { margin-top: 6px; }
+  .learn-page .learn-row { grid-template-columns: minmax(0,1fr) auto; }
+  .learn-page .learn-row > :first-child { grid-column: auto; }
+  .learn-page .learn-row .meter { grid-column: 1 / -1; }
+}
 /* 全站唯一的減少動態規則：保留短淡入，取消位移、縮放與環境動效。 */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: opacity 120ms var(--ease-out), color 120ms var(--ease-out), background-color 120ms var(--ease-out) !important; scroll-behavior: auto !important; }
   .try-sheet, .try-feedback, .try-checks li, .try-stamp, .ai-correct, .corrected .ai-total::after, .try-table .celebrate, .chat-arrive p { animation: state-fade 140ms var(--ease-out) !important; }
   .try-sheet.leaving { animation: state-out 120ms var(--ease-out) !important; }
   .try-stamp { transform: none; }
-  .try-option.px-card:active, .px-btn:active, a.px-card:hover, button.px-card:hover { transform: none; }
+  .try-option.px-card:active, body:not(.professional) .btn:active, body:not(.professional) .px-btn:active, a.px-card:hover, button.px-card:hover { transform: none; }
 }
 @media print {
   body { padding: 0; }

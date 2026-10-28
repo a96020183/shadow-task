@@ -2,7 +2,7 @@
    像素層：公會大廳（青年端）
    ====================================================================== */
 @font-face { font-family: "Cubic 11"; src: url("../fonts/Cubic_11-subset.woff2") format("woff2"); font-display: swap; }
-:root { --px-edge: var(--ink); --px-drop: rgba(21, 23, 28, .9); --r1: #1baf7a; --r2: #6b55d6; --r3: #f08a24; --night: #141a3a; }
+:root { --px-edge: var(--ink); --px-drop: rgba(21, 23, 28, .9); --r1: #0e7c66; --r2: var(--night); --r3: #c93a3a; --night: #141a3a; }
 :root[data-theme="dark"] { --px-drop: #000; }
 @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) { --px-drop: #000; } }
 

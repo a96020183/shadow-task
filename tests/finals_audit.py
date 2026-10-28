@@ -7,10 +7,17 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from playwright.sync_api import sync_playwright
+from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tests' / 'audit-output'
 OUT.mkdir(parents=True, exist_ok=True)
+
+# Every source character supported by the original font must survive subsetting.
+source_chars = set(''.join(p.read_text(encoding='utf8') for p in [ROOT/'index.html', *(ROOT/'assets/js').glob('*.js'), *(ROOT/'assets/css').glob('*.css')]))
+with TTFont(ROOT/'assets/fonts/Cubic_11.woff2') as original, TTFont(ROOT/'assets/fonts/Cubic_11-subset.woff2') as subset:
+    expected = {ord(c) for c in source_chars} & set(original.getBestCmap())
+    assert expected <= set(subset.getBestCmap()), 'Font subset is stale; rerun tools/subset_font.py'
 
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_):
@@ -35,7 +42,7 @@ def next_step(page, name):
 
 def restart(page):
     page.locator('[data-restart]').click()
-    page.wait_for_function('document.querySelector(".try-progress b")?.textContent==="接單"')
+    page.wait_for_function('document.querySelector(".try-progress b")?.textContent==="接工單"')
     page.wait_for_timeout(450)
 
 def pick_errors(page, duplicate=3):
@@ -49,6 +56,7 @@ def pick_errors(page, duplicate=3):
     assert '正確是 4 人' in page.locator('.try-feedback').inner_text()
     assert page.locator('.found').count()==2
     assert page.locator('.ai-correct').inner_text()=='4'
+    assert page.locator('.try-followup').count()==1
     page.wait_for_timeout(520)
 
 def check_qr(page, selector, filename, expected):
@@ -63,6 +71,76 @@ def check_qr(page, selector, filename, expected):
     img = cv2.resize(img, None, fx=3, fy=3, interpolation=cv2.INTER_NEAREST)
     decoded,_,_=cv2.QRCodeDetector().detectAndDecode(img)
     assert decoded==expected, (filename, decoded, expected)
+
+
+def choose_correct(page):
+    step = page.locator('.try-progress b').inner_text()
+    index = 0 if step=='應變' else 1
+    options = page.locator('[data-choice]')
+    lengths = [len(t) for t in options.all_text_contents()]
+    assert max(lengths)-min(lengths)<=10
+    options.nth(index).click()
+    assert page.locator('[data-next]').is_enabled()
+    assert page.locator('.try-followup').count()==0
+
+def check_verify_notice(page):
+    assert page.locator('.verify-state').inner_text()=='示範查驗頁・非市府核發'
+    assert '正式版將由臺北市政府青年局核發' in page.locator('.verify-notice').inner_text()
+    assert '有效・市府核發' not in page.locator('#view').inner_text()
+    assert page.locator('.verify-state').evaluate("e=>getComputedStyle(e).color===getComputedStyle(document.querySelector('.verify-notice')).color")
+
+def audit_round_three(page):
+    page.evaluate("location.hash='#/gov'")
+    page.wait_for_selector('.gov-evidence')
+    cards = page.locator('.gov-evidence .evidence-card')
+    assert cards.count()==2
+    assert '4 個月內獲面試邀約比例差' in cards.nth(0).inner_text()
+    assert '目標 ≥ 5 個百分點' in cards.nth(0).inner_text()
+    assert 'HR 情境實驗效果量' in cards.nth(1).inner_text()
+    assert '先導目標 ≥ 0.2 SD' in cards.nth(1).inner_text()
+    assert all('95% 信賴區間' in t for t in cards.all_text_contents())
+    assert cards.evaluate_all('(els)=>els.every(e=>e.getBoundingClientRect().bottom<innerHeight-64)')
+    body = page.locator('#view').inner_text()
+    for text in ['以下數字皆為模擬，用來展示指標設計','較對照組多降 0.2 分','目標 ≥ 0.3 分','第一梯 116 年 7 月開放、4 個月追蹤','104 人力銀行，2025','建議分工','本機紀錄（僅示範，非統計）']:
+        assert text in body, text
+    assert '試辦前 6 個月' not in body
+    assert '模擬・本機紀錄' not in body
+    assert page.locator('.gov-fairness .funnel-row b').inner_text().endswith('%')
+    assert abs(page.locator('.gov-fairness svg path').evaluate('e=>e.getBBox().width')-48)<0.1
+    assert page.locator('a[href="https://multimedia.cy.gov.tw/DocFiles/IFDEWebBBS_CY/Docs/114/3RD/00/76/1144330233.pdf"]').count()==1
+    data = page.evaluate('APP.GOV')
+    assert abs(data['completedTasks']/data['funnel'][1]['v']-1.3)<0.01
+    assert data['taskEstimate']==data['funnel'][1]['target']*1.3
+    assert any(d['v']<d['target'] for d in data['funnel'])
+    assert any(d['v']>d['target'] for d in data['funnel'])
+    page.evaluate("location.hash='#/learn'")
+    page.wait_for_selector('.learn-page')
+    body = page.locator('#view').inner_text()
+    for text in ['階段 3 功能・示範','資源類型','業者自願參與','相關性非因果','線上速成課程','讀書會','大學課程','職人一對一回饋']:
+        assert text in body, text
+    for text in ['依成效核銷','NT$','費用','Prompt 大全','三天 AI 變現','3,990','12,800']:
+        assert text not in body, text
+    page.evaluate("location.hash='#/about'")
+    page.wait_for_selector('.ladder')
+    body = page.locator('#view').text_content()
+    for text in ['L1 是電話初篩以外的能力訊號；L2 可替代或補充作業測驗','首張計分工單必答辯、後續抽審 30%','描述性發現，非因果推論','待青年局評估']:
+        assert text in body, text
+    for route in ['#/verify/TPE-TRY-2026','#/verify/TPE-PW-2026-BA58C8','#/verify/unknown']:
+        page.evaluate('(route)=>location.hash=route', route)
+        page.wait_for_selector('.verify-notice')
+        check_verify_notice(page)
+    page.evaluate("location.hash='#/verify/'+APP.portfolioCand(APP.CANDIDATES[2]).entries[0].vid")
+    page.wait_for_selector('.decision-card')
+    assert '能力判定須待答辯驗證' in page.locator('.review-dialogue').inner_text()
+    assert '職人評語' not in page.locator('.review-dialogue h2').all_text_contents()
+    assert 'AI 初評' in page.locator('.verify-bottom').inner_text()
+    page.evaluate("location.hash='#/company'")
+    page.wait_for_selector('.candidate-row')
+    assert page.locator('.candidate-actions .btn').first.evaluate("e=>getComputedStyle(e).boxShadow==='none'")
+    page.evaluate("location.hash='#/'")
+    page.wait_for_selector('.home-action')
+    assert '工單 #0142' in page.locator('.home-ticket').inner_text()
+    assert page.locator('.home-action .btn').evaluate("e=>getComputedStyle(e).borderRadius==='0px' && getComputedStyle(e).boxShadow!=='none'")
 
 with sync_playwright() as pw:
     browser = pw.chromium.launch(headless=True)
@@ -95,17 +173,22 @@ with sync_playwright() as pw:
     assert page.locator('.try-sheet').evaluate('(e)=>e.getAnimations().length')==0
     next_step(page, '應變')
     page.evaluate('window.sheetBefore = document.querySelector(".try-sheet")')
-    page.locator('[data-choice][data-value="2"]').click()
+    choose_correct(page)
     assert page.evaluate('window.sheetBefore === document.querySelector(".try-sheet")')
-    assert '真實工單裡，職人會當面追問你為什麼。' in page.locator('.try-feedback').inner_text()
+    assert '真實工單裡，職人會當面追問你為什麼。' not in page.locator('.try-feedback').inner_text()
     next_step(page, '說明')
-    page.locator('[data-choice][data-value="2"]').click()
-    next_step(page, '拿證明')
+    choose_correct(page)
+    next_step(page, '看紀錄')
     assert page.locator('.try-stamp').is_visible()
     assert page.locator('.try-checks li').count()==3
     assert page.locator('.try-track').count()==0
-    page.locator('a[href="#/verify/TPE-TRY-2026"]').click()
-    assert page.locator('.try-stamp').is_visible()
+    check_qr(page, '.record-qr svg', 'result-qr.png', 'https://a96020183.github.io/shadow-task/#/verify/TPE-TRY-2026')
+    assert page.locator('#try-title').inner_text()=='體驗完成'
+    assert '體驗紀錄（示範）' in page.locator('.try-record').inner_text()
+    assert 'TPE-TRY-2026' in page.locator('.try-record').inner_text()
+    assert '非市府核發' in page.locator('.try-record').inner_text()
+    page.locator('.try-record').click()
+    check_verify_notice(page)
     assert any(k in page.locator('#view').inner_text() for k in ('提示後答對', '再試後找到', '看答案後確認'))
     check_qr(page, '.try-qr svg', 'try-qr.png', 'https://a96020183.github.io/shadow-task/#/verify/TPE-TRY-2026')
     page.locator('a[href="#/onepage?try=1"]').click()
@@ -116,7 +199,15 @@ with sync_playwright() as pw:
     assert '待加強' in page.locator('#view').inner_text()
     assert page.locator('a[href="#/verify/TPE-PW-2026-BA58C8"]').count()==1
     # The review's own evidence code must resolve to the same answer.
+    coffee_link = page.locator('a[href="#/verify/TPE-PW-2026-BA58C8"]')
+    link_title = coffee_link.inner_text().replace('再看一張：', '').strip()
+    coffee_link.click()
+    assert page.locator('#view h1').inner_text()==link_title
+    coffee_time = page.locator('.decision-meta').inner_text()
+    page.evaluate("location.hash='#/try/review'")
     page.locator('.try-text-link').first.click()
+    assert page.locator('.decision-meta').inner_text()!=coffee_time
+    assert '2 小時 42 分' in page.locator('.decision-meta').inner_text()
     assert '去年校園報名多' in page.locator('.review-dialogue blockquote').inner_text()
     assert page.evaluate('JSON.stringify(APP.store.get())') == memory
     page.evaluate("window.dispatchEvent(new Event('pagehide'))")
@@ -134,25 +225,29 @@ with sync_playwright() as pw:
     assert page.locator('.found').count()==2
     assert '正確是 4 人' in page.locator('.try-feedback').inner_text()
     next_step(page, '應變')
-    page.locator('[data-choice][data-value="0"]').click()
-    assert page.locator('[data-next]').is_disabled()
-    assert '看了提示' in page.locator('.try-feedback').inner_text()
-    page.locator('[data-choice][data-value="2"]').click()
-    next_step(page, '說明')
     page.locator('[data-choice][data-value="1"]').click()
     assert page.locator('[data-next]').is_disabled()
+    assert '看了提示' in page.locator('.try-feedback').inner_text()
+    choose_correct(page)
+    next_step(page, '說明')
     page.locator('[data-choice][data-value="2"]').click()
-    next_step(page, '拿證明')
+    assert page.locator('[data-next]').is_disabled()
+    choose_correct(page)
+    next_step(page, '看紀錄')
     assert page.locator('.result-mark.hinted').count()==3
     assert page.evaluate("localStorage.getItem('shadowtask.v1')") == snapshot
     restart(page)
+
+    audit_round_three(page)
 
     # All route families, including working and defense states, not just their redirects.
     page.evaluate("APP.store.ensureAttempt('co-logistics-cs')")
     candidates = page.evaluate('APP.CANDIDATES.map(c=>c.id)')
     taskids = page.evaluate('APP.TASKS.map(t=>t.id)')
+    ai_route = page.evaluate("'/verify/'+APP.portfolioCand(APP.CANDIDATES[2]).entries[0].vid")
     routes = ['/', '/try', '/try/review', '/verify/TPE-TRY-2026', '/tasks', '/portfolio', '/onepage', '/onepage?try=1', '/verify/TPE-PW-2026-BA58C8', '/verify/unknown', '/company','/gov','/mentor','/squad','/join/NIGHT7','/about','/learn','/work/co-logistics-cs','/result/gov-youth-fair','/result/co-coffee-retention','/not-found']
     routes += ['/task/'+i for i in taskids] + ['/p/'+i for i in candidates]
+    routes += [ai_route]
     reports = []
     # All five screens plus reviewed evidence, at four widths and all theme/motion combinations.
     for theme, motion in [('light','no-preference'),('dark','no-preference'),('light','reduce'),('dark','reduce')]:
@@ -162,13 +257,13 @@ with sync_playwright() as pw:
             page.evaluate("location.hash='#/try'")
             page.wait_for_selector('.try-sheet')
             if page.locator('[data-restart]').count(): restart(page)
-            for step, name in enumerate(['接單','抓錯','應變','說明','拿證明'],1):
+            for step, name in enumerate(['接工單','抓錯','應變','說明','看紀錄'],1):
                 page.wait_for_timeout(450)
                 if step==2:
                     pick_errors(page, duplicate=2 if width==360 else 3)
                     # Clicking the other half of the same duplicate never counts as a second error.
                     assert page.locator('.found').count()==2
-                if step in [3,4]: page.locator('[data-choice][data-value="2"]').click()
+                if step in [3,4]: choose_correct(page)
                 page.wait_for_timeout(450)
                 reports.append(dict(route=f'/try step {step} {theme}/{motion}',width=width,**page.evaluate(SCAN)))
                 assert 'LV.' not in page.locator('body').inner_text()
@@ -182,7 +277,7 @@ with sync_playwright() as pw:
                     dock = page.locator('.try-dock').bounding_box()
                     assert dock['y']+dock['height'] <= page.viewport_size['height']+1
                     assert page.locator('.try-dock .px-btn').bounding_box()['height']>=44
-                    next_step(page, ['接單','抓錯','應變','說明','拿證明'][step])
+                    next_step(page, ['接工單','抓錯','應變','說明','看紀錄'][step])
             assert page.locator('.result-mark.hinted').count()==0
             for route in ['/try/review', '/verify/TPE-TRY-2026', '/verify/TPE-PW-2026-BA58C8']:
                 page.evaluate('(r)=>location.hash="#"+r',route)
@@ -190,6 +285,7 @@ with sync_playwright() as pw:
                 reports.append(dict(route=f'{route} {theme}/{motion}',width=width,**page.evaluate(SCAN)))
                 assert 'LV.' not in page.locator('body').inner_text()
                 assert 'XP' not in page.locator('body').inner_text()
+                if route.startswith('/verify/'): check_verify_notice(page)
             page.evaluate("location.hash='#/try'")
             page.wait_for_selector('[data-restart]')
             restart(page)
@@ -201,7 +297,7 @@ with sync_playwright() as pw:
             page.wait_for_timeout(520 if route=='/try' else 70)
             data=page.evaluate(SCAN)
             reports.append(dict(route=route,width=width,**data))
-            if width in [390,1280] and route in ['/','/tasks','/company','/gov','/mentor','/onepage','/verify/TPE-PW-2026-BA58C8','/try/review','/portfolio','/work/co-logistics-cs']:
+            if width in [390,1280] and route in ['/','/tasks','/company','/gov','/mentor','/onepage','/verify/TPE-PW-2026-BA58C8','/try/review','/portfolio','/learn','/about','/work/co-logistics-cs']:
                 page.screenshot(path=str(OUT/((route.strip('/').replace('/','_') or 'home')+f'-{width}.png')),full_page=True)
                 page.screenshot(path=str(OUT/((route.strip('/').replace('/','_') or 'home')+f'-{width}-fold.png')))
     OUT.joinpath('checkpoint.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -217,6 +313,8 @@ with sync_playwright() as pw:
     assert '小安' not in page.locator('body').inner_text()
     assert '原有使用者' not in page.locator('body').inner_text()
     assert page.locator('.candidate-row').count()==8
+    assert page.locator('.candidate-row .verification-level').count()==8
+    assert set(page.locator('.candidate-row .verification-level').all_text_contents())=={'答辯驗證','AI 初評'}
     assert page.locator('.candidate-row').evaluate_all('(els)=>els.filter(e=>e.getBoundingClientRect().bottom<=innerHeight-64).length')>=3
     page.locator('[data-function="客服"]').click()
     assert page.locator('.candidate-row').count()==1
@@ -234,6 +332,9 @@ with sync_playwright() as pw:
     assert page.locator('[role=dialog]').is_visible()
     page.locator('[data-x]').click()
     page.locator('[data-tab="post"]').click()
+    assert '比只看年資準' in page.locator('#view').inner_text()
+    assert '工作樣本 .33、結構化面試 .42、年資只有 .07' in page.locator('#view').inner_text()
+    assert '工單分數本身的效度會在試辦中驗證。' in page.locator('#view').inner_text()
     reports.append(dict(route='/company (post)',width=390,**page.evaluate(SCAN)))
     page.locator('[data-tab="inv"]').click()
     page.evaluate("location.hash='#/mentor'")
@@ -272,13 +373,15 @@ with sync_playwright() as pw:
     next_step(p2, '抓錯')
     pick_errors(p2)
     next_step(p2, '應變')
-    p2.locator('[data-choice][data-value="2"]').click()
+    choose_correct(p2)
     next_step(p2, '說明')
-    p2.locator('[data-choice][data-value="2"]').click()
-    next_step(p2, '拿證明')
+    choose_correct(p2)
+    next_step(p2, '看紀錄')
     assert p2.locator('.try-stamp').evaluate("e=>getComputedStyle(e).animationName")=='state-fade'
     assert p2.locator('.try-stamp').evaluate("e=>getComputedStyle(e).transform")=='none'
-    p2.locator('a[href="#/verify/TPE-TRY-2026"]').click()
+    check_qr(p2, '.record-qr svg', 'result-qr-dark-file.png', 'https://a96020183.github.io/shadow-task/#/verify/TPE-TRY-2026')
+    p2.locator('.try-record').click()
+    check_verify_notice(p2)
     check_qr(p2, '.try-qr svg', 'try-qr-dark-file.png', 'https://a96020183.github.io/shadow-task/#/verify/TPE-TRY-2026')
     p2.screenshot(path=str(OUT/'try-dark-reduced-360.png'),full_page=True)
     p2.locator('[data-theme-toggle]').click()
@@ -305,10 +408,12 @@ with sync_playwright() as pw:
         print('QR decoder unavailable; SVG generation verified')
     for width in [360,390,430,1280]:
         p2.set_viewport_size({'width':width,'height':844})
-        for route in ['/','/tasks','/portfolio','/company','/gov','/mentor','/verify/TPE-PW-2026-BA58C8','/try/review','/verify/TPE-TRY-2026','/squad','/learn','/about']:
+        for route in ['/','/tasks','/portfolio','/company','/gov','/mentor','/verify/TPE-PW-2026-BA58C8','/try/review','/verify/TPE-TRY-2026','/squad','/learn','/about',ai_route]:
             p2.evaluate('(r)=>location.hash="#"+r',route)
             p2.wait_for_timeout(40)
             reports.append(dict(route=route+' (dark/file/storage denied)',width=width,**p2.evaluate(SCAN)))
+    audit_round_three(p2)
+
     # The phone menu and primary actions stay keyboard reachable.
     page.evaluate("location.hash='#/'")
     page.set_viewport_size({'width':390,'height':844})

@@ -41,7 +41,7 @@
       lead: c.xp > 400 ? 2 : c.xp > 250 ? 1 : 0, tips: c.badges.length > 2 ? 2 : 1,
       entries: c.tasks.map((tid, i) => {
         const t = H.task(tid); const g = c.grades[i] || 'A'; const total = { S: 93, A: 82, B: 68, C: 55 }[g] - i * 2;
-        return { id: tid, t, grade: g, beh: candBeh(g), total, at: Date.now() - (i * 9 + 4) * DAY, dur: t.hours * 3600000 * (0.8 + i * .15), vid: 'TPE-PW-2026-' + APP.ui.hash(c.id + tid).slice(0, 6), dims: c.dims.map(v => Math.max(40, Math.min(100, v + (i - 1) * 3))), excerpt: '（示範人才：成果全文需經本人同意後由企業調閱）', def: c.id === 'y0412' || c.id === 'y0507' ? (APP.DEMO_EVIDENCE[tid]?.answer || '') : '「' + c.quote + '。」', q: APP.DEMO_EVIDENCE[tid]?.question || '', found: g === 'S' ? 3 : g === 'A' ? 2 : 1, errs: 3 };
+        return { id: tid, t, grade: g, beh: candBeh(g), total, at: Date.now() - (i * 9 + 4) * DAY, verification: c.verification, dur: t.hours * 3600000 * (c.id === 'y0507' ? 0.9 + i * .15 : 0.8 + i * .15), vid: 'TPE-PW-2026-' + APP.ui.hash(c.id + tid).slice(0, 6), dims: c.dims.map(v => Math.max(40, Math.min(100, v + (i - 1) * 3))), excerpt: '（示範人才：成果全文需經本人同意後由企業調閱）', def: c.id === 'y0412' || c.id === 'y0507' ? (APP.DEMO_EVIDENCE[tid]?.answer || '') : '「' + c.quote + '。」', q: APP.DEMO_EVIDENCE[tid]?.question || '', found: g === 'S' ? 3 : g === 'A' ? 2 : 1, errs: 3 };
       }).filter(e => e.grade !== 'C')
     };
   }
@@ -54,11 +54,11 @@
       ? (p.school ? `${p.blind ? icon('eyeOff', 'sr-only') : ''}${esc(p.school)}${p.verified ? ' <span class="tag tag-ok">' + icon('check') + '學校信箱已驗證</span>' : ''}${p.blind ? ' <span class="tag">對企業隱藏</span>' : ''}` : '')
       : `<span class="tag">${icon('eyeOff')}盲審模式：學校已隱藏</span>`;
     return `
-      <div class="card mt24"><div class="card-head"><h3>已驗證工單</h3><span class="faint" style="font-size:12.5px">點開查看成果與答辯節錄</span></div>
-        ${p.entries.map(e => `<details class="wo-d"><summary class="wo"><span class="grade grade-${e.grade}">${e.grade}</span><div><h4>${esc(e.t.title)}</h4>${e.def ? `<p class="portfolio-quote">${esc(e.def.slice(0, 90))}${e.def.length > 90 ? "…" : ""}</p>` : ""}<div class="sub"><span>${esc(e.t.org)}</span><span>${fmtDate(e.at)}</span><span>用時 ${fmtDur(e.dur)}</span><span>抓到埋設錯誤 ${e.found}/${e.errs}</span></div></div><div style="text-align:right"><b class="tnum" style="font-size:20px">${e.total}</b><div class="faint" style="font-size:11.5px">評量分數（示範）</div><div class="vid">${e.vid}</div>${p.own ? `<label class="tag" style="margin-top:4px;cursor:pointer" data-stop><input class="styled-switch" role="switch" type="checkbox" data-pub="${e.id}" ${e.hidden ? '' : 'checked'} style="margin:0 4px 0 0">對企業公開</label>` : ''}</div></summary>
+      <div class="card mt24"><div class="card-head"><h3>工單與驗證層級</h3><span class="faint" style="font-size:12.5px">點開查看成果與答辯節錄</span></div>
+        ${p.entries.map(e => `<details class="wo-d"><summary class="wo"><span class="grade grade-${e.grade}">${e.grade}</span><div><h4>${esc(e.t.title)}</h4>${e.verification ? `<span class="verification-level">${esc(e.verification)}</span>` : ""}${e.def ? `<p class="portfolio-quote">${esc(e.def.slice(0, 90))}${e.def.length > 90 ? "…" : ""}</p>` : ""}<div class="sub"><span>${esc(e.t.org)}</span><span>${fmtDate(e.at)}</span><span>用時 ${fmtDur(e.dur)}</span><span>抓到埋設錯誤 ${e.found}/${e.errs}</span></div></div><div style="text-align:right"><b class="tnum" style="font-size:20px">${e.total}</b><div class="faint" style="font-size:11.5px">評量分數（示範）</div><div class="vid">${e.vid}</div>${p.own ? `<label class="tag" style="margin-top:4px;cursor:pointer" data-stop><input class="styled-switch" role="switch" type="checkbox" data-pub="${e.id}" ${e.hidden ? '' : 'checked'} style="margin:0 4px 0 0">對企業公開</label>` : ''}</div></summary>
           <div class="wo-more"><div class="row" style="gap:6px;margin-bottom:12px">${(e.beh || []).map(x => `<span class="tag tag-ok">${icon('check')}${esc(x)}</span>`).join('')}</div><div class="mini-dims">${APP.DIMS.map((d, i) => `<div><b>${e.dims[i]}</b><span>${d.n}</span></div>`).join('')}</div>
             <div class="grid g2 mt16"><div><b style="font-size:13px">成果摘要</b><p class="muted mt8" style="font-size:13.5px">${nl(e.excerpt.slice(0, 220))}${e.excerpt.length > 220 ? '…' : ''}</p></div>
-            ${e.def ? `<div><b style="font-size:13px">答辯節錄</b><p class="faint mt8" style="font-size:12.5px">Q：${esc(e.q)}</p><p class="muted mt8" style="font-size:13.5px">A：${esc(e.def)}</p></div>` : '<div></div>'}</div></div></details>`).join('')}
+            ${e.def ? `<div><b style="font-size:13px">${e.verification === "AI 初評" ? "作答節錄（尚未答辯）" : "答辯節錄"}</b><p class="faint mt8" style="font-size:12.5px">Q：${esc(e.q)}</p><p class="muted mt8" style="font-size:13.5px">A：${esc(e.def)}</p></div>` : '<div></div>'}</div></div></details>`).join('')}
       </div>
       <div class="card card-pad mt24">
         <div class="pf-head">
@@ -184,7 +184,7 @@
       </div></details>
       <p class="grade-legend">試作示範：S ≥90・A 75–89・B 60–74・C &lt;60</p>
       <div class="talent-list">${pool().map(c => `<article class="candidate-row">
-        <div class="candidate-main"><a href="#/p/${c.id}" class="candidate-title">${px.blindAvatar()}<b>${esc(c.alias)}・${esc(c.focus)}</b><span class="grade sm">${c.grades[0]}</span></a><p class="candidate-quote">${{S:93,A:82,B:68,C:55}[c.grades[0]]} 分・抓錯 ${{S:3,A:2,B:1,C:1}[c.grades[0]]}/3｜「${esc(c.quote)}」</p></div>
+        <div class="candidate-main"><a href="#/p/${c.id}" class="candidate-title">${px.blindAvatar()}<b>${esc(c.alias)}・${esc(c.focus)}</b><span class="grade sm">${c.grades[0]}</span><span class="verification-level">${esc(c.verification)}</span></a><p class="candidate-quote">${{S:93,A:82,B:68,C:55}[c.grades[0]]} 分・抓錯 ${{S:3,A:2,B:1,C:1}[c.grades[0]]}/3｜「${esc(c.quote)}」</p></div>
         <div class="candidate-actions"><button class="btn btn-ghost btn-sm" data-shortlist="${c.id}" aria-pressed="${shortlist.has(c.id)}">${shortlist.has(c.id) ? '已加入' : '加入候選'}</button><button class="btn btn-primary btn-sm" data-invite="${c.id}">邀請</button></div>
       </article>`).join('') || '<p class="empty">此條件沒有示範人才，請調整篩選。</p>'}</div>`;
     const post = () => `
@@ -202,7 +202,7 @@
         </form>
         <div class="stack" style="--gap:20px">
           <div class="card card-pad"><h3 style="font-size:17px">為什麼企業願意出題</h3>
-            <div class="mt12">${[['一次出題，長期篩人', '同一張工單可以篩上百位候選人，比一場場面試省力。'], ['比面試準', '工作樣本搭配結構化追問，是預測工作表現最有效的方法之一；「年資」的預測效度只有 .07（Sackett et al., 2022）。'], ['先看工作樣本', '用已結案或模擬工單看能力，成果不得商用。'], ['雇主品牌', '出題企業在公會大廳曝光，觸及正在找方向的青年。']].map(r => `<div class="rule"><div class="ri">${icon('check')}</div><div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div></div>
+            <div class="mt12">${[['一次出題，長期篩人', '同一張工單可以篩上百位候選人，比一場場面試省力。'], ['比只看年資準', '工作樣本 .33、結構化面試 .42、年資只有 .07（Sackett et al., 2022）。工單分數本身的效度會在試辦中驗證。'], ['先看工作樣本', '用已結案或模擬工單看能力，成果不得商用。'], ['雇主品牌', '出題企業在公會大廳曝光，觸及正在找方向的青年。']].map(r => `<div class="rule"><div class="ri">${icon('check')}</div><div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div></div>
           <div class="card card-pad"><h3 style="font-size:17px">已送出的工單</h3>
             <div class="mt12">${(s.postedTasks || []).length ? s.postedTasks.map(p => `<div class="rule"><div class="ri">${icon('doc')}</div><div style="flex:1"><b>${esc(p.title)}</b><span>${esc(p.role)}・${p.hours} 小時・${fmtDate(p.at)}</span></div><span class="tag tag-warn" style="align-self:center">${esc(p.status)}</span></div>`).join('') : '<p class="faint" style="font-size:13px">還沒有送出的工單</p>'}</div></div>
         </div>
@@ -213,7 +213,7 @@
       title: '企業專區',
       html: `<div class="wrap page">
 
-        <h1 class="section-title">依工作成果找人才</h1><p class="company-intro">虛構示範人才・盲審隱藏姓名與學校</p>
+        <h1 class="section-title">依工作成果找人才</h1><p class="company-intro">虛構示範人才・盲審隱藏姓名與學校。能力判定以答辯驗證為準；面試前須答辯。</p>
         <div class="company-tabs"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
         <div data-body>${body()}</div>
         <details class="proposal-evidence mt24"><summary>企業招募現況與資料出處</summary>        <div class="grid g3 mt24">
@@ -258,34 +258,23 @@
 
   /* ======================================================== 市府儀表板 */
   V.gov = () => {
-    const G = APP.GOV;
-    const s = APP.store.get();
+    const G = APP.GOV, s = APP.store.get();
     return {
       title: '市府儀表板',
-      html: `<div class="wrap page">
-        <div class="row-between"><div><div class="eyebrow">市府儀表板・試辦期示範數據</div><h1 class="section-title mt8">追蹤成果，不是人次。</h1></div><span class="tag tag-warn">${icon('info')}數據為模擬，用於展示指標設計</span></div>
-        <p class="section-sub">監察院 2025 年糾正勞動力發展署青年職涯發展中心：績效指標多是「人次」等產出型指標，無法評估對就業的實際效果。影子工單從第一天就追蹤成果型指標。（監察院，2025 年 6 月糾正案）</p>
-        <div class="grid g4 mt32">${G.kpis.map(k => `<div class="card kpi"><div class="label">${esc(k.label)}</div><div class="value">${esc(k.value)}</div><p class="kpi-sample">模擬</p><div class="delta muted" style="font-weight:400">${esc(k.delta)}</div></div>`).join('')}</div>
-        <div class="grid g2 mt24" style="align-items:start">
-          <div class="card card-pad"><h3 style="font-size:16px">每月完成工單數（模擬）</h3><p class="faint" style="font-size:12.5px">試辦第 1–6 個月</p><div class="mt16">${APP.ui.columns(G.months.map((m, i) => ({ n: m, v: G.completions[i] })), { unit: ' 張' })}</div></div>
-          <div class="card card-pad"><h3 style="font-size:16px">從參與到錄取（模擬）</h3><p class="faint" style="font-size:12.5px">試辦期累計人數</p><div class="mt16">${APP.ui.hbars(G.funnel, { unit: ' 人' })}</div>
-            <p class="faint mt12" style="font-size:12.5px">錄取者 6 個月留任率將與 104 人資調查的新人留任率 65.4% 比較。</p></div>
-        </div>
-        <div class="grid g2 mt24" style="align-items:start">
-          <div class="card card-pad"><h3 style="font-size:16px">職能別完成工單數（模擬）</h3><div class="mt16">${APP.ui.hbars(G.industries, { unit: ' 張' })}</div></div>
-          <div class="card card-pad"><h3 style="font-size:16px">誰在使用：公平性指標（模擬）</h3><div class="mt16">${APP.ui.hbars([{ n: '非頂大在學／畢業', v: 62 }, { n: '轉職者', v: 18 }, { n: '接案・非典就業', v: 11 }, { n: '二度就業', v: 9 }], { unit: '%' })}</div>
-            <p class="faint mt12" style="font-size:12.5px">企業端預設盲審，降低學歷標籤影響。</p></div>
-        </div>
-        <div class="grid g2 mt24" style="align-items:start">
-          <div class="card card-pad"><h3 style="font-size:16px">跨局處分工</h3><div class="mt8">${G.depts.map(d => `<div class="dept"><b>${esc(d.n)}</b><span>${esc(d.r)}</span></div>`).join('')}</div></div>
-          <div class="card card-pad"><h3 style="font-size:16px">本機原型的即時數據</h3><p class="faint" style="font-size:12.5px">來自這台裝置瀏覽器中的作答</p>
-            <div class="grid g2 mt16" style="gap:12px">
-              <div class="card kpi" style="box-shadow:none"><div class="label">完成工單</div><div class="value">${APP.store.completed().length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">求職焦慮前後測</div><div class="value">${s.anxiety.pre || '—'} → ${s.anxiety.post || '—'}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">企業邀約</div><div class="value">${(s.invites || []).length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">推薦好友通過</div><div class="value">${(s.referrals || []).filter(r => r.status === 'passed').length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
-            </div></div>
-        </div>
+      html: `<div class="wrap page gov-page">
+        <h1 class="section-title">市府儀表板</h1>
+        <p class="gov-notice">以下數字皆為模擬，用來展示指標設計</p>
+        <div class="grid g2 gov-evidence">${G.evidence.map(k => `<section class="card evidence-card"><h2>${esc(k.label)}</h2><div class="evidence-result"><strong>${esc(k.value)}</strong><span>${esc(k.target)}</span></div><p class="evidence-interval">${esc(k.interval)}</p><p class="try-note">${esc(k.note)}</p></section>`).join('')}</div>
+        <p class="try-note gov-schedule">企畫書期程：第一梯 116 年 7 月開放、4 個月追蹤；第二梯 116 年 11 月開放。試辦以 HR 情境實驗為主要因果證據；分梯比較先報效果量與信賴區間，顯著性留待階段 3。</p>
+        <section class="mt32"><h2 class="gov-heading">福祉與評量品質</h2><div class="grid g3">${G.outcomes.map(k => `<div class="kpi"><h3 class="label">${esc(k.label)}</h3><div class="value">${esc(k.value)}</div><p class="kpi-target">${esc(k.target)}</p>${k.note ? `<p class="try-note">${esc(k.note)}</p>` : ''}</div>`).join('')}</div></section>
+        <section class="card card-pad mt24 gov-fairness"><h2 class="gov-heading">公平性指標</h2>${APP.ui.hbars(G.fairness, { unit: '%', max: 100 })}<p class="try-note">上述背景合計去除重複計數；長條以 0–100% 呈現。</p><p class="mt16">各背景族群通過率差距：<b>12 個百分點</b> <span class="kpi-target">目標 ≤ 10 個百分點</span></p></section>
+        <section class="mt32 gov-secondary"><h2 class="gov-heading">次要指標：參與及產出</h2><p class="try-note">兩梯試辦累計至 117 年第 1 季；不能把完成量當成就業效果，也不等於上方分梯分析的母體。</p>
+          <div class="grid g2 mt16"><div class="card card-pad"><h3>從參與到錄取</h3><table class="gov-funnel"><thead><tr><th scope="col">指標</th><th scope="col">人數</th><th scope="col">目標</th></tr></thead><tbody>${G.funnel.map(d => `<tr><th scope="row">${esc(d.n)}</th><td>${d.v.toLocaleString()}</td><td>${d.target.toLocaleString()}</td></tr>`).join('')}</tbody></table><p class="try-note">錄取者 6 個月留任率於 117 年追蹤，屬探索性結果；目標為公開追蹤結果。全體新人參考值 65.4%（104 人力銀行，2025），非對照組。</p></div>
+          <div class="card card-pad"><h3>累計完成計分工單</h3><div class="evidence-result"><strong>${G.completedTasks} 張</strong><span>目標規模推估 ${G.taskEstimate} 張</span></div><p class="try-note">754 ÷ 580 位完成者＝平均 1.3 張。企畫書預算假設為每人約 1.3 張，依 600 位完成者目標推估 780 張；不是另訂的成效門檻。</p></div></div>
+        </section>
+        <p class="gov-source mt24">指標設計回應監察院對青年職涯發展中心偏重人次等產出指標的糾正。<a href="https://multimedia.cy.gov.tw/DocFiles/IFDEWebBBS_CY/Docs/114/3RD/00/76/1144330233.pdf" target="_blank" rel="noopener">監察院，2025 年 6 月 6 日糾正案</a></p>
+        <section class="card card-pad mt24"><h2 class="gov-heading">建議分工</h2><div>${G.depts.map(d => `<div class="dept"><b>${esc(d.n)}</b><span>${esc(d.r)}</span></div>`).join('')}</div></section>
+        <section class="card card-pad mt24 gov-local"><h2 class="gov-heading">本機紀錄（僅示範，非統計）</h2><p class="try-note">以下取自這個瀏覽器的操作與示範帳號，不納入上方指標；無政策目標值。</p><dl class="kv mt16"><dt>完成工單</dt><dd>${APP.store.completed().length}</dd><dt>個人焦慮填答</dt><dd>${s.anxiety.pre || '—'} → ${s.anxiety.post || '—'}（僅個人紀錄）</dd><dt>企業邀約操作</dt><dd>${(s.invites || []).length}</dd><dt>推薦好友通過</dt><dd>${(s.referrals || []).filter(r => r.status === 'passed').length}</dd></dl></section>
       </div>`,
       mount(root) { APP.ui.mountTips(root); }
     };
@@ -475,24 +464,25 @@
       const t = iss && APP.h.task(iss.id);
       if (t) mine = { t, grade: iss.grade, at: iss.at, vid, hidden: !!(APP.store.get().pubHidden || {})[iss.id], beh: [`抓出埋設錯誤 ${(iss.found || []).length}/${t.errors.length}`].concat(iss.qn >= 2 ? [`開工前提出 ${iss.qn} 個確認問題`] : [], iss.changeHits >= 2 ? ['需求變更後完整調整成果'] : []) };
     }
-    if (mine && mine.hidden) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page"><div class="card card-pad"><div class="eyebrow">工單履歷查驗</div><h2 class="mt16" style="font-size:22px">此驗證碼有效，但持有人已設定不公開</h2><p class="muted mt8">請直接向持有人索取授權。驗證碼：<span class="mono">${esc(vid)}</span></p></div></div>` };
+    if (mine && mine.hidden) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page"><div class="card card-pad">${APP.ui.verifyNotice()}<h2 class="mt16" style="font-size:22px">此本機紀錄已設定不公開</h2><p class="muted mt8">請直接向持有人索取授權。驗證碼：<span class="mono">${esc(vid)}</span></p></div></div>` };
     let hit = mine, who = mine ? '本機使用者' : '';
     if (!hit) for (const c of APP.CANDIDATES) { const e = APP.portfolioCand(c).entries.find(x => x.vid === vid); if (e) { hit = e; who = c.alias; break; } }
-    if (!hit) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page"><h1 class="section-title">查無此驗證碼</h1><p class="mt16">請確認驗證碼是否正確：<span class="mono">${esc(vid)}</span></p></div>` };
+    if (!hit) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page">${APP.ui.verifyNotice()}<h1 class="section-title mt16">查無此驗證碼</h1><p class="mt16">請確認驗證碼是否正確：<span class="mono">${esc(vid)}</span></p></div>` };
     const evidence = APP.DEMO_EVIDENCE[hit.t.id] || {};
+    const aiOnly = hit.verification === 'AI 初評';
     const alias = mine ? 'Y-' + APP.ui.hash(pm.name).slice(0, 4) : who;
     return {
       title: '面試決策卡・工單履歷查驗',
       html: `<div class="wrap wrap-narrow page"><article class="decision-card">
-        <p class="verify-state">✓ 有效・市府核發（示範）</p>
+        ${APP.ui.verifyNotice()}
         <h1 class="section-title mt16">${esc(hit.t.title)}</h1><p class="decision-role">適合職缺：${esc(evidence.role || hit.t.role)}</p>
-        <p class="sample-notice">虛構示範・非正式核發，人物、評語與分數皆為示範</p>
+
         <section class="review-dialogue"><h2>他怎麼說</h2><blockquote>${esc(hit.def || evidence.answer || '此紀錄尚無可公開的答辯節錄。')}</blockquote>
-        <h2>職人評語</h2><p>${esc(mine ? '本機紀錄尚無真人職人評語；此處呈現提案示範：' + (evidence.comment || '需由職人複核。') : hit.grade === 'B' || hit.grade === 'C' ? '能說出處理方向，但資料核對與效果檢查還需要練習。' : evidence.comment || '')}</p><p class="try-note">${esc(evidence.reviewer || '職人答辯官，示範')}</p></section>
-        <div class="review-points"><div><b>做得好</b><p>${esc(evidence.good || '有留下工作過程紀錄。')}</p></div><div><b>待加強</b><p>${esc(evidence.improve || '需補充驗證方法。')}</p></div></div>
-        <p class="decision-meta">所用時間：${hit.dur ? APP.ui.fmtDur(hit.dur) : '未記錄'}（示範）・難度 L${hit.t.level}</p>
-        <section class="decision-dims"><h2>五力（示範）</h2><dl>${APP.DIMS.map((d,i) => `<div><dt>${d.n}</dt><dd>${hit.dims ? hit.dims[i] : '未記錄'}</dd></div>`).join('')}</dl></section>
-        <div class="verify-bottom"><div><dl class="kv"><dt>驗證碼</dt><dd class="mono">${esc(vid)}</dd><dt>持有人</dt><dd>${esc(alias)}（盲審）</dd><dt>驗證方式</dt><dd>AI 初評＋職人答辯（示範）</dd></dl><p class="try-note">成果全文與過程紀錄需本人同意後調閱。原型資料來自本機與虛構示範人才，非市府正式文件。</p></div><div class="op-qr">${APP.ui.qrSVG(APP.ui.verifyURL(vid, true))}<span>線上查驗示範</span></div></div>
+        <h2>${aiOnly ? "驗證狀態" : "職人評語"}</h2><p>${esc(aiOnly ? "此工單僅完成 AI 初評，尚無職人答辯評語；能力判定須待答辯驗證。" : mine ? '本機紀錄尚無真人職人評語；此處呈現提案示範：' + (evidence.comment || '需由職人複核。') : hit.grade === 'B' || hit.grade === 'C' ? '能說出處理方向，但資料核對與效果檢查還需要練習。' : evidence.comment || '')}</p><p class="try-note">${esc(aiOnly ? '企業邀約面試前須完成答辯。' : (evidence.reviewer || '職人答辯官').replace(/[，・]示範/g, ''))}</p></section>
+        <div class="review-points"><div><b>${aiOnly ? "AI 初評：做得好" : "做得好"}</b><p>${esc(evidence.good || '有留下工作過程紀錄。')}</p></div><div><b>${aiOnly ? "AI 初評：待加強" : "待加強"}</b><p>${esc(evidence.improve || '需補充驗證方法。')}</p></div></div>
+        <p class="decision-meta">所用時間：${hit.dur ? APP.ui.fmtDur(hit.dur) : '未記錄'}・難度 L${hit.t.level}</p>
+        <section class="decision-dims"><h2>五力</h2><dl>${APP.DIMS.map((d,i) => `<div><dt>${d.n}</dt><dd>${hit.dims ? hit.dims[i] : '未記錄'}</dd></div>`).join('')}</dl></section>
+        <div class="verify-bottom"><div><dl class="kv"><dt>驗證碼</dt><dd class="mono">${esc(vid)} <small>DEMO</small></dd><dt>持有人</dt><dd>${esc(alias)}（盲審）</dd><dt>驗證方式</dt><dd>${esc(hit.verification || "AI 初評＋模擬答辯")}</dd></dl><p class="try-note">成果全文與過程紀錄需本人同意後調閱。此處人物、評語與分數為虛構或本機練習資料。</p></div><div class="op-qr">${APP.ui.qrSVG(APP.ui.verifyURL(vid, true))}<span>線上查驗</span></div></div>
         <a class="try-text-link" href="#/company">回企業專區 ${icon('arrowRight')}</a>
       </article></div>`
     };
