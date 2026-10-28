@@ -33,8 +33,8 @@
     title: '沒有年資，也有證明',
     html: `<div class="final-home wrap">
       <section class="home-intro">
-        <div class="home-copy"><h1 class="px">沒有年資，<br>也有證明。</h1><p class="home-lead">做一張模擬工單，<br>讓企業看見你怎麼把事做對。</p></div>
-        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><span>今天的委託</span><h2>青年市集報名數據</h2><p>AI 算了 7 人。<br>你能看出哪裡不對嗎？</p><div class="home-ticket-bottom">${px.avatar('fair-supervisor', 32)}<span>抓錯 → 應變 → 拿到證明</span></div></div></div>
+        <div class="home-copy"><h1>沒有年資，<br>也有證明。</h1><p class="home-lead">市府出題、職人把關，做完拿到市府可以查驗的工單履歷。</p></div>
+        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><h2>青年市集：AI 算了 7 人，對嗎？</h2><p>接下主管的工單，親手核對一次。</p></div></div>
         <div class="home-action"><a class="btn btn-accent" href="#/try">開始 60 秒體驗 ${icon('arrowRight')}</a><p>不用註冊，不用輸入資料。</p></div>
       </section>
       <section class="home-evidence"><div><h2>把「我會」變成做過的證據。</h2><p>留下怎麼抓錯、怎麼調整、為什麼這樣做。<br>完整工單經職人複核，再交給企業看。</p></div><a class="btn btn-ghost" href="#/verify/TPE-PW-2026-BA58C8">看一張查驗範例 ${icon('arrowRight')}</a></section>
@@ -65,7 +65,7 @@
           <p>${esc(t.summary)}</p>
           <div class="q-skills">${t.skills.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
         </div>
-        <div class="q-foot"><div class="q-reward"><span>${px.sprite('coin', { size: 14 })}<b>+${H.xpFor(t)}</b> XP</span><span>${icon('clock')}${t.hours} 小時</span>${t.done ? `<span>${icon('users')}${t.done.toLocaleString()}</span>` : ''}</div>${stateTxt}</div>
+        <div class="q-foot"><div class="q-reward"><span>${px.sprite('coin', { size: 14 })}<b>+${H.xpFor(t)}</b> XP</span><span>${icon('clock')}${t.hours} 小時</span>${t.done ? `<span>${icon('users')}${t.done.toLocaleString()}（示範）</span>` : ''}</div>${stateTxt}</div>
         ${t.status === 'locked' ? `<div class="q-lock"><div>${px.sprite('lock', { size: 30 })}<b>尚未解鎖</b><span>${esc(t.unlock)}</span></div></div>` : ''}`;
       return t.status === 'open' ? `<a class="px-card ${cls}" href="#/task/${t.id}" data-q="${esc(t.title + t.skills.join('') + t.org)}" data-type="${t.orgType}" data-st="${st.k}">${inner}</a>`
         : `<div class="px-card ${cls}" data-q="${esc(t.title + t.skills.join('') + t.org)}" data-type="${t.orgType}" data-st="${st.k}">${inner}</div>`;
@@ -188,7 +188,7 @@
                 <dt>預估時間</dt><dd>${t.hours} 小時</dd>
                 <dt>難度</dt><dd>L${t.level} 見習委託</dd>
                 <dt>獎勵</dt><dd>+${H.xpFor(t)} XP・工單履歷</dd>
-                <dt>已完成</dt><dd>${t.done.toLocaleString()} 人</dd>
+                <dt>已完成</dt><dd>${t.done.toLocaleString()} 人（示範）</dd>
               </dl>
               <div class="mt16">${cta}</div>
             </div>

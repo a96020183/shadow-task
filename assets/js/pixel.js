@@ -247,6 +247,7 @@
     }
     g += R(cx - 3, y - 4, 7, 4, ink) + R(cx - 1, y - 7, 3, 3, ink) + R(cx, y - 15, 1, 8, '#9fb0d8') + R(cx, y - 16, 1, 1, '#e34948');
     g += R(0, H - 2, W, 2, '#0b0f26');
+    [[148,29],[152,37],[148,45],[42,53]].forEach(([wx,wy],i) => { g += `<rect class="sky-window" style="--window-delay:${i * 700}ms" x="${wx}" y="${wy}" width="1" height="1" fill="#ffc93c"/>`; });
     return `<svg class="px-skyline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">${g}</svg>`;
   }
 
@@ -255,5 +256,6 @@
     return `<div class="px-xp" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100">${Array.from({ length: blocks }, (_, i) => `<i class="${i < on ? 'on' : ''}"></i>`).join('')}</div>`;
   }
 
-  APP.px = { sprite, avatar, skyline, xpBar, BADGE_SPRITE };
+  const blindAvatar = () => '<svg class="px-sprite blind-avatar" viewBox="0 0 16 16" width="32" height="32" shape-rendering="crispEdges" aria-hidden="true"><path fill="var(--ink)" d="M5 1h6v2h2v7h-2v2h3v3H2v-3h3v-2H3V3h2z"/><path fill="var(--paper)" d="M6 3h4v1h1v3H9v2H7V6h2V5H7v1H5V4h1zM7 10h2v2H7z"/></svg>';
+  APP.px = { blindAvatar, sprite, avatar, skyline, xpBar, BADGE_SPRITE };
 })();

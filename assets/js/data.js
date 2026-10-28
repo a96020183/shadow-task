@@ -290,12 +290,12 @@ APP.TASKS = [
 APP.CANDIDATES = [
   { id: 'y0412', alias: 'Y-0412', initial: '安', who: '應屆畢業', school: '私立科大・企管系', focus: '行銷分析', dims: [88, 76, 94, 85, 81], grades: ['S', 'A', 'A'], tasks: ['co-coffee-retention', 'gov-youth-fair', 'co-logistics-cs'], hours: 8, badges: ['bug', 'ask', 'open'], xp: 520 },
   { id: 'y0388', alias: 'Y-0388', initial: '晴', who: '轉職（餐飲 → 營運）', school: '高職・餐飲管理科', focus: '營運客服', dims: [91, 84, 72, 90, 86], grades: ['A', 'A'], tasks: ['co-logistics-cs', 'gov-youth-fair'], hours: 5, badges: ['pivot', 'calm'], xp: 330 },
-  { id: 'y0291', alias: 'Y-0291', initial: '宇', who: '接案設計師', school: '國立大學・設計系', focus: '服務設計', dims: [79, 88, 70, 77, 92], grades: ['A', 'B'], tasks: ['gov-youth-fair', 'co-coffee-retention'], hours: 6, badges: ['open', 'calm'], xp: 260 },
+  { id: 'y0291', alias: 'Y-0291', initial: '宇', who: '接案設計師', school: '國立大學・設計系', focus: '服務設計', dims: [72, 76, 65, 67, 78], grades: ['B', 'B'], tasks: ['gov-youth-fair', 'co-coffee-retention'], hours: 6, badges: ['open', 'calm'], xp: 260 },
   { id: 'y0507', alias: 'Y-0507', initial: '恩', who: '在學（大四）', school: '私立大學・統計系', focus: '資料分析', dims: [82, 90, 96, 80, 74], grades: ['S', 'S', 'A'], tasks: ['gov-youth-fair', 'co-coffee-retention', 'co-logistics-cs'], hours: 8, badges: ['bug', 'ask', 'pivot', 'open'], xp: 610 },
-  { id: 'y0163', alias: 'Y-0163', initial: '翔', who: '二度就業', school: '五專・國貿科', focus: '行政企劃', dims: [86, 74, 68, 82, 88], grades: ['A', 'B'], tasks: ['co-logistics-cs', 'gov-youth-fair'], hours: 5, badges: ['ask', 'calm'], xp: 240 },
+  { id: 'y0163', alias: 'Y-0163', initial: '翔', who: '二度就業', school: '五專・國貿科', focus: '行政企劃', dims: [70, 62, 61, 66, 74], grades: ['B', 'C'], tasks: ['co-logistics-cs', 'gov-youth-fair'], hours: 5, badges: ['ask', 'calm'], xp: 240 },
   { id: 'y0620', alias: 'Y-0620', initial: '芸', who: '應屆畢業', school: '國立大學・社會系', focus: '政策研究', dims: [92, 80, 78, 88, 90], grades: ['A', 'A', 'A'], tasks: ['gov-youth-fair', 'co-logistics-cs', 'co-coffee-retention'], hours: 8, badges: ['ask', 'pivot'], xp: 450 },
-  { id: 'y0745', alias: 'Y-0745', initial: '凱', who: '退伍待業', school: '私立科大・資管系', focus: '數據營運', dims: [74, 86, 88, 72, 70], grades: ['B', 'A'], tasks: ['co-logistics-cs', 'co-coffee-retention'], hours: 5, badges: ['bug'], xp: 210 },
-  { id: 'y0833', alias: 'Y-0833', initial: '妤', who: '轉職（零售 → 行銷）', school: '高中・普通科', focus: '社群行銷', dims: [84, 78, 82, 91, 85], grades: ['A', 'A'], tasks: ['co-coffee-retention', 'gov-youth-fair'], hours: 6, badges: ['pivot', 'open'], xp: 300 }
+  { id: 'y0745', alias: 'Y-0745', initial: '凱', who: '退伍待業', school: '私立科大・資管系', focus: '數據營運', dims: [64, 71, 73, 62, 60], grades: ['B', 'C'], tasks: ['co-logistics-cs', 'co-coffee-retention'], hours: 5, badges: ['bug'], xp: 210 },
+  { id: 'y0833', alias: 'Y-0833', initial: '妤', who: '轉職（零售 → 行銷）', school: '高中・普通科', focus: '社群行銷', dims: [68, 61, 58, 70, 65], grades: ['C', 'B'], tasks: ['co-coffee-retention', 'gov-youth-fair'], hours: 6, badges: ['pivot', 'open'], xp: 300 }
 ];
 
 /* 市府儀表板示範數據（試辦期模擬） */
@@ -358,3 +358,42 @@ APP.NEWS = [
   { t: '練習', m: '第一張工單可選「練習模式」：不計分、不公開，只拿回饋' },
   { t: '公告', m: '每張工單每月輪替錯誤位置，解析不外流' }
 ];
+
+/* 虛構答辯節錄：企業比較與查驗共用，並非實際人才或職人背書。 */
+APP.DEMO_EVIDENCE = {
+  'co-coffee-retention': {
+    role: '行銷數據分析／CRM 企劃・新鮮人',
+    question: '為什麼不能直接拿 AI 算的回購率做活動決策？',
+    answer: '「我先拆開新舊會員的回購率與占比，避免把客群改變誤認成舊客流失。主管說不能打折，我就改用會員集點，先小規模試辦，再用新會員回購率檢查。」',
+    comment: '能先釐清統計口徑再決策，沒有直接採信 AI 的數字。',
+    reviewer: '資深 CRM 經理，12 年・示範',
+    good: '先核對新舊會員數據，再依主管限制調整方案。',
+    improve: '需補上集點成本，以及停止試辦的判準。'
+  },
+  'gov-youth-fair': {
+    role: '活動企劃／行銷助理・新鮮人',
+    question: '改用免費校園公告，你怎麼知道這樣有效？',
+    answer: '「去年校園報名多，只能當起點，不能代表今年一定有效。我會先在兩個校園試辦，分開記錄公告來源、有效報名與實際到場；取消和重複報名先排除。試辦後再比較到場數，決定是否擴大。」',
+    comment: '能區分報名與到場，也知道先核對資料再做決策。',
+    reviewer: '資深活動企劃，示範',
+    good: '提出可檢查的試辦方法，不把過去成效當保證。',
+    improve: '還要事先訂出擴大或停止試辦的判準。'
+  },
+  'co-logistics-cs': {
+    role: '客服營運／營運助理・新鮮人',
+    question: '你怎麼判斷要先改善哪一類客訴？',
+    answer: '「我會先確認同一客訴沒有重複計算，再按影響程度與回覆時間排順序。先調整交接紀錄，下一週再核對未解案件數。」',
+    comment: '有把資料核對和處理次序連在一起，驗證方式仍可更具體。',
+    reviewer: '資深客服營運主管，示範',
+    good: '有說明優先處理的理由。',
+    improve: '需補上異常案件的升級處理規則。'
+  }
+};
+const candidateNotes = [
+  ['數據', '先拆新舊會員，再算回購率'], ['客服', '先看影響程度，再排回覆順序'],
+  ['企劃', '先試辦，再比較實際到場'], ['數據', '取消和重複報名先排除'],
+  ['企劃', '我有列步驟，但還缺檢查時間'], ['企劃', '先確認對象，再選推廣管道'],
+  ['數據', '找到重複紀錄，還要查異常來源'], ['企劃', '我採用 AI 建議，還沒核對客群']
+];
+APP.CANDIDATES.forEach((c, i) => { [c.function, c.quote] = candidateNotes[i]; });
+APP.LEARN.forEach(c => { c.n += '（示範）'; });

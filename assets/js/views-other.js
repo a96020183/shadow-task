@@ -14,8 +14,6 @@
     return b;
   }
   const candBeh = g => g === 'S' ? ['抓出埋設錯誤 3/3（含 AI 的錯）', '需求變更後完整調整成果', '開工前提出 3 個確認問題'] : g === 'A' ? ['抓出埋設錯誤 2/3', '需求變更後完整調整成果'] : ['抓出埋設錯誤 1/3', '開工前提出確認問題'];
-  const pctOf = total => Math.max(5, Math.min(99, Math.round((total - 50) * 1.9)));
-  APP.pctOf = pctOf;
   const avgDims = list => list.length ? [0, 1, 2, 3, 4].map(i => Math.round(list.reduce((s, d) => s + d[i], 0) / list.length)) : [0, 0, 0, 0, 0];
   const platformAvg = () => avgDims(APP.CANDIDATES.map(c => c.dims)).map(v => Math.round(v * .92));
 
@@ -43,8 +41,8 @@
       lead: c.xp > 400 ? 2 : c.xp > 250 ? 1 : 0, tips: c.badges.length > 2 ? 2 : 1,
       entries: c.tasks.map((tid, i) => {
         const t = H.task(tid); const g = c.grades[i] || 'A'; const total = { S: 93, A: 82, B: 68, C: 55 }[g] - i * 2;
-        return { id: tid, t, grade: g, beh: candBeh(g), total, at: Date.now() - (i * 9 + 4) * DAY, dur: t.hours * 3600000 * (0.8 + i * .15), vid: 'TPE-PW-2026-' + APP.ui.hash(c.id + tid).slice(0, 6), dims: c.dims.map(v => Math.max(40, Math.min(100, v + (i - 1) * 3))), excerpt: '（示範人才：成果全文需經本人同意後由企業調閱）', def: '', q: '', found: g === 'S' ? 3 : g === 'A' ? 2 : 1, errs: 3 };
-      })
+        return { id: tid, t, grade: g, beh: candBeh(g), total, at: Date.now() - (i * 9 + 4) * DAY, dur: t.hours * 3600000 * (0.8 + i * .15), vid: 'TPE-PW-2026-' + APP.ui.hash(c.id + tid).slice(0, 6), dims: c.dims.map(v => Math.max(40, Math.min(100, v + (i - 1) * 3))), excerpt: '（示範人才：成果全文需經本人同意後由企業調閱）', def: c.id === 'y0412' || c.id === 'y0507' ? (APP.DEMO_EVIDENCE[tid]?.answer || '') : '「' + c.quote + '。」', q: APP.DEMO_EVIDENCE[tid]?.question || '', found: g === 'S' ? 3 : g === 'A' ? 2 : 1, errs: 3 };
+      }).filter(e => e.grade !== 'C')
     };
   }
 
@@ -53,14 +51,20 @@
     const hours = p.entries.reduce((s, e) => s + e.dur, 0);
     const lv = level(p.xp);
     const schoolLine = p.own
-      ? (p.school ? `${p.blind ? icon('eyeOff', 'sr-only') : ''}${esc(p.school)}${p.verified ? ' <span class="tag tag-ok">' + icon('check') + '學籍已驗證</span>' : ''}${p.blind ? ' <span class="tag">對企業隱藏</span>' : ''}` : '')
+      ? (p.school ? `${p.blind ? icon('eyeOff', 'sr-only') : ''}${esc(p.school)}${p.verified ? ' <span class="tag tag-ok">' + icon('check') + '學校信箱已驗證</span>' : ''}${p.blind ? ' <span class="tag">對企業隱藏</span>' : ''}` : '')
       : `<span class="tag">${icon('eyeOff')}盲審模式：學校已隱藏</span>`;
     return `
-      <div class="card card-pad">
+      <div class="card mt24"><div class="card-head"><h3>已驗證工單</h3><span class="faint" style="font-size:12.5px">點開查看成果與答辯節錄</span></div>
+        ${p.entries.map(e => `<details class="wo-d"><summary class="wo"><span class="grade grade-${e.grade}">${e.grade}</span><div><h4>${esc(e.t.title)}</h4>${e.def ? `<p class="portfolio-quote">${esc(e.def.slice(0, 90))}${e.def.length > 90 ? "…" : ""}</p>` : ""}<div class="sub"><span>${esc(e.t.org)}</span><span>${fmtDate(e.at)}</span><span>用時 ${fmtDur(e.dur)}</span><span>抓到埋設錯誤 ${e.found}/${e.errs}</span></div></div><div style="text-align:right"><b class="tnum" style="font-size:20px">${e.total}</b><div class="faint" style="font-size:11.5px">評量分數（示範）</div><div class="vid">${e.vid}</div>${p.own ? `<label class="tag" style="margin-top:4px;cursor:pointer" data-stop><input class="styled-switch" role="switch" type="checkbox" data-pub="${e.id}" ${e.hidden ? '' : 'checked'} style="margin:0 4px 0 0">對企業公開</label>` : ''}</div></summary>
+          <div class="wo-more"><div class="row" style="gap:6px;margin-bottom:12px">${(e.beh || []).map(x => `<span class="tag tag-ok">${icon('check')}${esc(x)}</span>`).join('')}</div><div class="mini-dims">${APP.DIMS.map((d, i) => `<div><b>${e.dims[i]}</b><span>${d.n}</span></div>`).join('')}</div>
+            <div class="grid g2 mt16"><div><b style="font-size:13px">成果摘要</b><p class="muted mt8" style="font-size:13.5px">${nl(e.excerpt.slice(0, 220))}${e.excerpt.length > 220 ? '…' : ''}</p></div>
+            ${e.def ? `<div><b style="font-size:13px">答辯節錄</b><p class="faint mt8" style="font-size:12.5px">Q：${esc(e.q)}</p><p class="muted mt8" style="font-size:13.5px">A：${esc(e.def)}</p></div>` : '<div></div>'}</div></div></details>`).join('')}
+      </div>
+      <div class="card card-pad mt24">
         <div class="pf-head">
-          <div style="background:var(--night);padding:10px;width:96px;height:96px;display:grid;place-items:center">${px.avatar(p.name, 72)}</div>
+          <div style="background:var(--night);padding:10px;width:96px;height:96px;display:grid;place-items:center">${p.own ? px.avatar(p.name, 72) : px.blindAvatar()}</div>
           <div>
-            <div class="row" style="gap:10px"><span class="pf-name">${esc(p.name)}</span>${p.who ? `<span class="tag">${esc(p.who)}</span>` : ''}${p.own ? `<span class="tag tag-warn mono" title="只有你看得到">LV.${lv.lv} ${esc(lv.n)}</span>` : ''}</div>
+            <div class="row" style="gap:10px"><span class="pf-name">${esc(p.name)}</span>${p.who ? `<span class="tag">${esc(p.who)}</span>` : ''}</div>
             <div class="muted mt8" style="font-size:13.5px">${schoolLine}</div>
             <div class="pf-stats">
               <div><b>${p.entries.length}</b><span>完成工單</span></div>
@@ -70,24 +74,19 @@
             </div>
           </div>
           ${p.own ? `<div class="stack no-print" style="--gap:8px">
-            <a class="btn btn-primary btn-sm" href="#/onepage">${icon('doc')}一頁式工單履歷（可附在 104）</a>
+            <a class="btn btn-primary btn-sm" href="#/onepage">${icon('doc')}一頁式工單履歷（可附在求職網站的履歷）</a>
             <button class="btn btn-ghost btn-sm" data-copy>${icon('link')}複製驗證碼</button>
-            <label class="check" style="font-size:13px;padding:8px 10px"><input type="checkbox" data-vis ${p.visible ? 'checked' : ''}>企業可搜尋到我</label>
-            <label class="check" style="font-size:13px;padding:8px 10px"><input type="checkbox" data-blind ${p.blind ? 'checked' : ''}>盲審：對企業隱藏學校</label>
+            <label class="check" style="font-size:13px;padding:8px 10px"><input class="styled-switch" role="switch" type="checkbox" data-vis ${p.visible ? 'checked' : ''}>企業可搜尋到我</label>
+            <label class="check" style="font-size:13px;padding:8px 10px"><input class="styled-switch" role="switch" type="checkbox" data-blind ${p.blind ? 'checked' : ''}>盲審：對企業隱藏學校</label>
           </div>` : `<div class="stack no-print" style="--gap:8px"><button class="btn btn-primary" data-invite="${p.id}">${icon('send')}邀請面試</button><a class="btn btn-ghost btn-sm" href="#/company">${icon('arrowLeft')}回人才搜尋</a></div>`}
         </div>
       </div>
-      <div class="grid g2 mt24" style="align-items:start">
+<details class="portfolio-growth mt24"><summary>查看五力、徽章與成長紀錄</summary><p class="try-note">${p.own ? `LV.${lv.lv} ${esc(lv.n)}` : "示範五力評量"}</p>      <div class="grid g2 mt24" style="align-items:start">
         <div class="card card-pad"><div class="row-between"><h3 style="font-size:17px">五力平均</h3><span class="faint" style="font-size:12.5px">${p.entries.length} 張工單</span></div><div class="mt12" style="max-width:380px;margin:12px auto 0">${APP.ui.radar(p.dims, { compare: platformAvg() })}</div></div>
         <div class="card card-pad"><h3 style="font-size:17px">徽章</h3><p class="faint mt8" style="font-size:12.5px">每枚徽章都對應工單中被驗證過的具體行為。</p>
           <div class="pbadge-row mt16">${Object.entries(APP.BADGES).map(([k, b]) => `<div class="px-card pbadge ${p.badges.includes(k) ? '' : 'off'}">${px.sprite(APP.px.BADGE_SPRITE[k], { size: 34 })}<b>${b.n}</b><span>${b.d}</span></div>`).join('')}</div></div>
       </div>
-      <div class="card mt24"><div class="card-head"><h3>已驗證工單</h3><span class="faint" style="font-size:12.5px">點開查看成果與答辯節錄</span></div>
-        ${p.entries.map(e => `<details class="wo-d"><summary class="wo"><span class="grade grade-${e.grade}">${e.grade}</span><div><h4>${esc(e.t.title)}</h4><div class="sub"><span>${esc(e.t.org)}</span><span>${fmtDate(e.at)}</span><span>用時 ${fmtDur(e.dur)}</span><span>抓到埋設錯誤 ${e.found}/${e.errs}</span></div></div><div style="text-align:right"><b class="tnum" style="font-size:20px">${e.total}</b><div class="faint" style="font-size:11.5px">超越約 ${pctOf(e.total)}% 完成者</div><div class="vid">${e.vid}</div>${p.own ? `<label class="tag" style="margin-top:4px;cursor:pointer" data-stop><input type="checkbox" data-pub="${e.id}" ${e.hidden ? '' : 'checked'} style="margin:0 4px 0 0">對企業公開</label>` : ''}</div></summary>
-          <div class="wo-more"><div class="row" style="gap:6px;margin-bottom:12px">${(e.beh || []).map(x => `<span class="tag tag-ok">${icon('check')}${esc(x)}</span>`).join('')}</div><div class="mini-dims">${APP.DIMS.map((d, i) => `<div><b>${e.dims[i]}</b><span>${d.n}</span></div>`).join('')}</div>
-            <div class="grid g2 mt16"><div><b style="font-size:13px">成果摘要</b><p class="muted mt8" style="font-size:13.5px">${nl(e.excerpt.slice(0, 220))}${e.excerpt.length > 220 ? '…' : ''}</p></div>
-            ${e.def ? `<div><b style="font-size:13px">答辯節錄</b><p class="faint mt8" style="font-size:12.5px">Q：${esc(e.q)}</p><p class="muted mt8" style="font-size:13.5px">A：${esc(e.def)}</p></div>` : '<div></div>'}</div></div></details>`).join('')}
-      </div>
+</details>
       <div class="verify-box mt24"><div class="qr">${APP.ui.fingerprint(p.name + p.entries.map(e => e.vid).join(''))}</div><div><b>如何驗證這份工單履歷</b><p class="muted" style="font-size:13px">每張工單都有驗證碼，企業可在平台查核成果全文、作答過程紀錄與答辯內容（需本人同意）。本提案規劃由市府平台核發，作為學經歷以外的能力證據。</p></div></div>`;
   }
 
@@ -167,28 +166,27 @@
   /* ======================================================== 企業專區 */
   V.company = (tab0) => {
     const s = APP.store.get();
-    let tab = tab0 || 'talent', minG = 'all', sortBy = -1;
-    const me = mine();
+    let tab = tab0 || 'talent', minG = 'all', sortBy = -1, functionFilter = '全部';
+    const shortlist = new Set(s.shortlist || []);
     const pool = () => {
       let list = APP.CANDIDATES.slice();
-      const vis = me.entries.filter(e => !e.hidden);
-      if (me.visible && vis.length) list.unshift({ id: 'me', alias: me.name + '（你）', initial: me.name.slice(0, 1), who: me.who, focus: '我的工單履歷', dims: avgDims(vis.map(e => e.dims)), grades: vis.map(e => e.grade), badges: me.badges, tasks: [], xp: me.xp, me: true });
+      if (functionFilter !== '全部') list = list.filter(c => c.function === functionFilter);
       if (minG !== 'all') list = list.filter(c => c.grades.some(g => minG === 'S' ? g === 'S' : g === 'S' || g === 'A'));
       if (sortBy >= 0) list.sort((a, b) => b.dims[sortBy] - a.dims[sortBy]);
       return list;
     };
     const ITYPE = { interview: '面試邀約', l2: 'L2 企業挑戰', intern: '實習（L3）' };
     const talent = () => `
-      <div class="talent-filters mt24">
+      <div class="function-filters" role="group" aria-label="職能篩選">${['全部', '數據', '客服', '企劃'].map(n => `<button class="chip ${functionFilter === n ? 'on' : ''}" data-function="${n}" aria-pressed="${functionFilter === n}">${n}</button>`).join('')}</div>
+      <details class="talent-more"><summary>等級與五力排序</summary><div class="talent-filters">
         <label class="field"><span>工單等級</span><select class="select" data-grade-filter>${[['all','全部等級'],['A','A 級以上'],['S','有 S 級']].map(([k,n]) => `<option value="${k}" ${minG === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
         <label class="field"><span>排序依據</span><select class="select" data-sort-filter><option value="-1">預設順序</option>${APP.DIMS.map((d,i) => `<option value="${i}" ${sortBy === i ? 'selected' : ''}>${d.n}</option>`).join('')}</select></label>
-      </div>
-      <div class="grid g3 mt24">${pool().map(c => `<div class="card cand">
-        <div class="cand-top"><span class="professional-avatar">${icon('user')}</span><div><b>${esc(c.alias)}</b><span>${esc(c.who)}・${esc(c.focus)}</span></div><div style="margin-left:auto;display:flex;gap:4px">${c.grades.slice(0, 3).map(g => `<span class="grade grade-${g} sm">${g}</span>`).join('')}</div></div>
-        <div class="mini-dims">${APP.DIMS.map((d, i) => `<div style="${sortBy === i ? 'background:var(--accent-soft)' : ''}"><b>${c.dims[i]}</b><span>${d.n}</span></div>`).join('')}</div>
-        <p class="candidate-behavior">${c.badges.map(b => APP.BADGES[b].n).join('・')}</p>
-        <div class="row" style="margin-top:auto"><a class="btn btn-ghost btn-sm" href="${c.me ? '#/portfolio' : '#/p/' + c.id}">${icon('eye')}查看工單履歷</a>${c.me ? '' : `<button class="btn btn-primary btn-sm" data-invite="${c.id}">${icon('send')}邀請</button>`}</div>
-      </div>`).join('')}</div>`;
+      </div></details>
+      <p class="grade-legend">試作示範：S ≥90・A 75–89・B 60–74・C &lt;60</p>
+      <div class="talent-list">${pool().map(c => `<article class="candidate-row">
+        <div class="candidate-main"><a href="#/p/${c.id}" class="candidate-title">${px.blindAvatar()}<b>${esc(c.alias)}・${esc(c.focus)}</b><span class="grade sm">${c.grades[0]}</span></a><p class="candidate-quote">${{S:93,A:82,B:68,C:55}[c.grades[0]]} 分・抓錯 ${{S:3,A:2,B:1,C:1}[c.grades[0]]}/3｜「${esc(c.quote)}」</p></div>
+        <div class="candidate-actions"><button class="btn btn-ghost btn-sm" data-shortlist="${c.id}" aria-pressed="${shortlist.has(c.id)}">${shortlist.has(c.id) ? '已加入' : '加入候選'}</button><button class="btn btn-primary btn-sm" data-invite="${c.id}">邀請</button></div>
+      </article>`).join('') || '<p class="empty">此條件沒有示範人才，請調整篩選。</p>'}</div>`;
     const post = () => `
       <div class="grid g2 mt24" style="align-items:start">
         <form class="card card-pad stack" style="--gap:14px" data-post>
@@ -209,14 +207,14 @@
             <div class="mt12">${(s.postedTasks || []).length ? s.postedTasks.map(p => `<div class="rule"><div class="ri">${icon('doc')}</div><div style="flex:1"><b>${esc(p.title)}</b><span>${esc(p.role)}・${p.hours} 小時・${fmtDate(p.at)}</span></div><span class="tag tag-warn" style="align-self:center">${esc(p.status)}</span></div>`).join('') : '<p class="faint" style="font-size:13px">還沒有送出的工單</p>'}</div></div>
         </div>
       </div>`;
-    const invites = () => `<div class="card mt24">${(s.invites || []).length ? s.invites.map(iv => { const c = APP.CANDIDATES.find(x => x.id === iv.cand) || { alias: iv.cand }; return `<div class="wo"><span style="background:var(--night);width:44px;height:44px;display:grid;place-items:center">${px.avatar(c.alias, 32)}</span><div><h4>${esc(c.alias)}</h4><div class="sub"><span>${ITYPE[iv.type] || iv.type}</span><span>${fmtDate(iv.at)}</span><span>${esc(iv.msg)}</span></div></div><span class="tag tag-warn">等待回覆</span></div>`; }).join('') : `<div class="empty"><p class="muted">還沒有送出任何邀請</p></div>`}</div>`;
+    const invites = () => `<div class="card mt24">${(s.invites || []).length ? s.invites.map(iv => { const c = APP.CANDIDATES.find(x => x.id === iv.cand) || { alias: iv.cand }; return `<div class="wo"><span style="background:var(--night);width:44px;height:44px;display:grid;place-items:center">${px.blindAvatar()}</span><div><h4>${esc(c.alias)}</h4><div class="sub"><span>${ITYPE[iv.type] || iv.type}</span><span>${fmtDate(iv.at)}</span><span>${esc(iv.msg)}</span></div></div><span class="tag tag-warn">等待回覆</span></div>`; }).join('') : `<div class="empty"><p class="muted">還沒有送出任何邀請</p></div>`}</div>`;
     const body = () => tab === 'talent' ? talent() : tab === 'post' ? post() : invites();
     return {
       title: '企業專區',
       html: `<div class="wrap page">
 
-        <h1 class="section-title mt8">依工作成果找人才</h1><p class="section-sub">先看怎麼做事，再決定要不要面試。</p>
-        <div class="row-between mt48"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div><span class="tag">${icon('eyeOff')}盲審模式：預設隱藏學校與姓名</span></div>
+        <h1 class="section-title">依工作成果找人才</h1><p class="company-intro">虛構示範人才・盲審隱藏姓名與學校</p>
+        <div class="company-tabs"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
         <div data-body>${body()}</div>
         <details class="proposal-evidence mt24"><summary>企業招募現況與資料出處</summary>        <div class="grid g3 mt24">
           <div class="card kpi"><div class="label">補一個職缺平均花費</div><div class="value">60.3 天</div><div class="delta muted" style="font-weight:400">104 人資調查，2025</div></div>
@@ -228,7 +226,15 @@
       mount(root) {
         const re = () => { $('[data-body]', root).innerHTML = body(); $$('[data-tab]', root).forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); };
         root.addEventListener('click', e => {
-          const el = e.target.closest('[data-tab],[data-g],[data-sort],[data-invite]'); if (!el) return;
+          const el = e.target.closest('[data-tab],[data-g],[data-sort],[data-invite],[data-function],[data-shortlist]'); if (!el) return;
+          if (el.dataset.function) { functionFilter = el.dataset.function; re(); $(`[data-function="${functionFilter}"]`, root).focus(); }
+          if (el.dataset.shortlist) {
+            const id = el.dataset.shortlist;
+            shortlist.has(id) ? shortlist.delete(id) : shortlist.add(id);
+            s.shortlist = [...shortlist]; APP.store.save();
+            el.textContent = shortlist.has(id) ? '已加入' : '加入候選';
+            el.setAttribute('aria-pressed', String(shortlist.has(id)));
+          }
           if (el.dataset.tab) { tab = el.dataset.tab; re(); }
           if (el.dataset.g) { minG = el.dataset.g; re(); }
           if (el.dataset.sort) { sortBy = sortBy === +el.dataset.sort ? -1 : +el.dataset.sort; re(); }
@@ -258,26 +264,26 @@
       title: '市府儀表板',
       html: `<div class="wrap page">
         <div class="row-between"><div><div class="eyebrow">市府儀表板・試辦期示範數據</div><h1 class="section-title mt8">追蹤成果，不是人次。</h1></div><span class="tag tag-warn">${icon('info')}數據為模擬，用於展示指標設計</span></div>
-        <p class="section-sub">監察院 2025 年糾正勞動力發展署青年職涯發展中心：績效指標多是「人次」等產出型指標，無法評估對就業的實際效果。影子工單從第一天就追蹤成果型指標。</p>
-        <div class="grid g4 mt32">${G.kpis.map(k => `<div class="card kpi"><div class="label">${esc(k.label)}</div><div class="value">${esc(k.value)}</div><div class="delta muted" style="font-weight:400">${esc(k.delta)}</div></div>`).join('')}</div>
+        <p class="section-sub">監察院 2025 年糾正勞動力發展署青年職涯發展中心：績效指標多是「人次」等產出型指標，無法評估對就業的實際效果。影子工單從第一天就追蹤成果型指標。（監察院，2025 年 6 月糾正案）</p>
+        <div class="grid g4 mt32">${G.kpis.map(k => `<div class="card kpi"><div class="label">${esc(k.label)}</div><div class="value">${esc(k.value)}</div><p class="kpi-sample">模擬</p><div class="delta muted" style="font-weight:400">${esc(k.delta)}</div></div>`).join('')}</div>
         <div class="grid g2 mt24" style="align-items:start">
-          <div class="card card-pad"><h3 style="font-size:16px">每月完成工單數</h3><p class="faint" style="font-size:12.5px">試辦第 1–6 個月</p><div class="mt16">${APP.ui.columns(G.months.map((m, i) => ({ n: m, v: G.completions[i] })), { unit: ' 張' })}</div></div>
-          <div class="card card-pad"><h3 style="font-size:16px">從參與到錄取</h3><p class="faint" style="font-size:12.5px">試辦期累計人數</p><div class="mt16">${APP.ui.hbars(G.funnel, { unit: ' 人' })}</div>
+          <div class="card card-pad"><h3 style="font-size:16px">每月完成工單數（模擬）</h3><p class="faint" style="font-size:12.5px">試辦第 1–6 個月</p><div class="mt16">${APP.ui.columns(G.months.map((m, i) => ({ n: m, v: G.completions[i] })), { unit: ' 張' })}</div></div>
+          <div class="card card-pad"><h3 style="font-size:16px">從參與到錄取（模擬）</h3><p class="faint" style="font-size:12.5px">試辦期累計人數</p><div class="mt16">${APP.ui.hbars(G.funnel, { unit: ' 人' })}</div>
             <p class="faint mt12" style="font-size:12.5px">錄取者 6 個月留任率將與 104 人資調查的新人留任率 65.4% 比較。</p></div>
         </div>
         <div class="grid g2 mt24" style="align-items:start">
-          <div class="card card-pad"><h3 style="font-size:16px">職能別完成工單數</h3><div class="mt16">${APP.ui.hbars(G.industries, { unit: ' 張' })}</div></div>
-          <div class="card card-pad"><h3 style="font-size:16px">誰在使用：公平性指標</h3><div class="mt16">${APP.ui.hbars([{ n: '非頂大在學／畢業', v: 62 }, { n: '轉職者', v: 18 }, { n: '接案・非典就業', v: 11 }, { n: '二度就業', v: 9 }], { unit: '%' })}</div>
+          <div class="card card-pad"><h3 style="font-size:16px">職能別完成工單數（模擬）</h3><div class="mt16">${APP.ui.hbars(G.industries, { unit: ' 張' })}</div></div>
+          <div class="card card-pad"><h3 style="font-size:16px">誰在使用：公平性指標（模擬）</h3><div class="mt16">${APP.ui.hbars([{ n: '非頂大在學／畢業', v: 62 }, { n: '轉職者', v: 18 }, { n: '接案・非典就業', v: 11 }, { n: '二度就業', v: 9 }], { unit: '%' })}</div>
             <p class="faint mt12" style="font-size:12.5px">企業端預設盲審，降低學歷標籤影響。</p></div>
         </div>
         <div class="grid g2 mt24" style="align-items:start">
           <div class="card card-pad"><h3 style="font-size:16px">跨局處分工</h3><div class="mt8">${G.depts.map(d => `<div class="dept"><b>${esc(d.n)}</b><span>${esc(d.r)}</span></div>`).join('')}</div></div>
           <div class="card card-pad"><h3 style="font-size:16px">本機原型的即時數據</h3><p class="faint" style="font-size:12.5px">來自這台裝置瀏覽器中的作答</p>
             <div class="grid g2 mt16" style="gap:12px">
-              <div class="card kpi" style="box-shadow:none"><div class="label">完成工單</div><div class="value">${APP.store.completed().length}</div></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">求職焦慮前後測</div><div class="value">${s.anxiety.pre || '—'} → ${s.anxiety.post || '—'}</div></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">企業邀約</div><div class="value">${(s.invites || []).length}</div></div>
-              <div class="card kpi" style="box-shadow:none"><div class="label">推薦好友通過</div><div class="value">${(s.referrals || []).filter(r => r.status === 'passed').length}</div></div>
+              <div class="card kpi" style="box-shadow:none"><div class="label">完成工單</div><div class="value">${APP.store.completed().length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
+              <div class="card kpi" style="box-shadow:none"><div class="label">求職焦慮前後測</div><div class="value">${s.anxiety.pre || '—'} → ${s.anxiety.post || '—'}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
+              <div class="card kpi" style="box-shadow:none"><div class="label">企業邀約</div><div class="value">${(s.invites || []).length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
+              <div class="card kpi" style="box-shadow:none"><div class="label">推薦好友通過</div><div class="value">${(s.referrals || []).filter(r => r.status === 'passed').length}</div><p class="kpi-sample">模擬・本機紀錄</p></div>
             </div></div>
         </div>
       </div>`,
@@ -455,7 +461,7 @@
           <div class="op-head"><div><div class="eyebrow">工單履歷・學習與評量紀錄</div><h1>${esc(name)}</h1><div class="muted" style="font-size:13px">${esc(all.who || '')}${all.blind ? '・學校已隱藏（盲審）' : (all.school ? '・' + esc(all.school) : '')}</div></div>
             <div class="op-qr">${APP.ui.qrSVG(APP.ui.verifyURL(vid))}<span>掃描查驗</span></div></div>
           <div class="op-dims">${APP.DIMS.map((d, i) => `<div><span>${d.n}</span><div class="track"><div class="fill" style="width:${dims[i]}%"></div></div><b>${dims[i]}</b></div>`).join('')}</div>
-          <div class="op-list">${list.map(e => `<div class="op-item"><span class="grade grade-${e.grade} sm">${e.grade}</span><div><b>${esc(e.t.title)}</b><div class="faint" style="font-size:12px">${esc(e.t.org)}・${fmtDate(e.at)}・超越約 ${APP.pctOf(e.total)}% 完成者</div><div class="op-beh">${(e.beh || []).map(x => '✓ ' + esc(x)).join('　')}</div></div><span class="mono faint" style="font-size:11px">${e.vid}</span></div>`).join('')}</div>
+          <div class="op-list">${list.map(e => `<div class="op-item"><span class="grade grade-${e.grade} sm">${e.grade}</span><div><b>${esc(e.t.title)}</b><div class="faint" style="font-size:12px">${esc(e.t.org)}・${fmtDate(e.at)}・評量分數 ${e.total}（示範）</div><div class="op-beh">${(e.beh || []).map(x => '✓ ' + esc(x)).join('　')}</div></div><span class="mono faint" style="font-size:11px">${e.vid}</span></div>`).join('')}</div>
           <p class="faint" style="font-size:11.5px;margin-top:14px">正式版規劃經 AI 初評與職人答辯驗證。企業可掃描 QR code 或輸入驗證碼查驗；成果全文需本人同意後調閱。本頁為競賽提案原型示範，非市府正式文件。</p>
         </div></div>`,
       mount(root) { root.addEventListener('click', e => { if (e.target.closest('[data-print]')) window.print(); }); }
@@ -472,16 +478,23 @@
     if (mine && mine.hidden) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page"><div class="card card-pad"><div class="eyebrow">工單履歷查驗</div><h2 class="mt16" style="font-size:22px">此驗證碼有效，但持有人已設定不公開</h2><p class="muted mt8">請直接向持有人索取授權。驗證碼：<span class="mono">${esc(vid)}</span></p></div></div>` };
     let hit = mine, who = mine ? '本機使用者' : '';
     if (!hit) for (const c of APP.CANDIDATES) { const e = APP.portfolioCand(c).entries.find(x => x.vid === vid); if (e) { hit = e; who = c.alias; break; } }
+    if (!hit) return { title: '工單履歷查驗', html: `<div class="wrap wrap-narrow page"><h1 class="section-title">查無此驗證碼</h1><p class="mt16">請確認驗證碼是否正確：<span class="mono">${esc(vid)}</span></p></div>` };
+    const evidence = APP.DEMO_EVIDENCE[hit.t.id] || {};
+    const alias = mine ? 'Y-' + APP.ui.hash(pm.name).slice(0, 4) : who;
     return {
-      title: '工單履歷查驗',
-      html: `<div class="wrap wrap-narrow page"><div class="card card-pad">
-        <h1 class="section-title">工單履歷查驗</h1><p class="muted mt8">提案原型・示範紀錄</p>
-        ${hit ? `<div class="row mt16" style="gap:20px"><span class="stamp stamp-in">有效<b>VALID</b></span><div><h2 style="font-size:22px">${esc(hit.t.title)}</h2><div class="muted">${esc(hit.t.org)}・${fmtDate(hit.at)}・等級 ${hit.grade}</div></div></div>
-          <div class="row mt16" style="gap:6px">${(hit.beh || []).map(x => `<span class="tag tag-ok">${icon('check')}${esc(x)}</span>`).join('')}</div>
-          <dl class="kv mt24" style="max-width:420px"><dt>驗證碼</dt><dd class="mono">${esc(vid)}</dd><dt>持有人</dt><dd>${esc(who)}（盲審）</dd><dt>驗證方式</dt><dd>AI 初評＋職人答辯</dd></dl>
-          <p class="faint mt16" style="font-size:12.5px">成果全文、過程紀錄與答辯摘要，需持有人同意後調閱。原型示範：查驗資料來自這台裝置與示範人才。</p>`
-        : `<h2 class="mt16" style="font-size:22px">查無此驗證碼</h2><p class="muted mt8">請確認驗證碼是否正確：<span class="mono">${esc(vid)}</span></p>`}
-      </div></div>`
+      title: '面試決策卡・工單履歷查驗',
+      html: `<div class="wrap wrap-narrow page"><article class="decision-card">
+        <p class="verify-state">✓ 有效・市府核發（示範）</p>
+        <h1 class="section-title mt16">${esc(hit.t.title)}</h1><p class="decision-role">適合職缺：${esc(evidence.role || hit.t.role)}</p>
+        <p class="sample-notice">虛構示範・非正式核發，人物、評語與分數皆為示範</p>
+        <section class="review-dialogue"><h2>他怎麼說</h2><blockquote>${esc(hit.def || evidence.answer || '此紀錄尚無可公開的答辯節錄。')}</blockquote>
+        <h2>職人評語</h2><p>${esc(mine ? '本機紀錄尚無真人職人評語；此處呈現提案示範：' + (evidence.comment || '需由職人複核。') : hit.grade === 'B' || hit.grade === 'C' ? '能說出處理方向，但資料核對與效果檢查還需要練習。' : evidence.comment || '')}</p><p class="try-note">${esc(evidence.reviewer || '職人答辯官，示範')}</p></section>
+        <div class="review-points"><div><b>做得好</b><p>${esc(evidence.good || '有留下工作過程紀錄。')}</p></div><div><b>待加強</b><p>${esc(evidence.improve || '需補充驗證方法。')}</p></div></div>
+        <p class="decision-meta">所用時間：${hit.dur ? APP.ui.fmtDur(hit.dur) : '未記錄'}（示範）・難度 L${hit.t.level}</p>
+        <section class="decision-dims"><h2>五力（示範）</h2><dl>${APP.DIMS.map((d,i) => `<div><dt>${d.n}</dt><dd>${hit.dims ? hit.dims[i] : '未記錄'}</dd></div>`).join('')}</dl></section>
+        <div class="verify-bottom"><div><dl class="kv"><dt>驗證碼</dt><dd class="mono">${esc(vid)}</dd><dt>持有人</dt><dd>${esc(alias)}（盲審）</dd><dt>驗證方式</dt><dd>AI 初評＋職人答辯（示範）</dd></dl><p class="try-note">成果全文與過程紀錄需本人同意後調閱。原型資料來自本機與虛構示範人才，非市府正式文件。</p></div><div class="op-qr">${APP.ui.qrSVG(APP.ui.verifyURL(vid, true))}<span>線上查驗示範</span></div></div>
+        <a class="try-text-link" href="#/company">回企業專區 ${icon('arrowRight')}</a>
+      </article></div>`
     };
   };
 })();

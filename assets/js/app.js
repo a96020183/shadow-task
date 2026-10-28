@@ -7,6 +7,7 @@
   const ROUTES = [
     [/^\/$/, () => V.landing()],
     [/^\/try$/, () => V.try()],
+    [/^\/try\/review$/, () => V.tryReview()],
     [/^\/tasks$/, () => V.tasks()],
     [/^\/task\/([\w-]+)$/, m => V.task(m[1])],
     [/^\/work\/([\w-]+)$/, m => V.work(m[1])],
@@ -51,13 +52,13 @@
         </div>
       </div></header>
       <main id="view" tabindex="-1"></main>
-      <nav class="mobile-nav" aria-label="手機主要導覽">${[['#/', '首頁', 'ticket'], ['#/tasks', '青年', 'user'], ['#/company', '企業', 'briefcase'], ['#/gov', '市府', 'chart'], ['#/mentor', '答辯官', 'chat']].map(([h,n,i]) => `<a href="${h}">${icon(i)}<span>${n}</span></a>`).join('')}</nav>
+      <nav class="mobile-nav" aria-label="手機主要導覽">${[['#/', '首頁', 'ticket'], ['#/tasks', '青年', 'user'], ['#/company', '企業', 'briefcase'], ['#/gov', '市府', 'chart'], ['#/mentor', '職人', 'chat']].map(([h,n,i]) => `<a href="${h}">${icon(i)}<span>${n}</span></a>`).join('')}</nav>
       <footer class="foot"><div class="wrap foot-grid">
         <div style="max-width:560px"><a class="brand" href="#/">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
           <p class="mt12">本網站為「2026 臺北市政府青年局公共政策創意提案競賽」的提案原型，<b>不是臺北市政府的官方服務</b>。網站中的企業、局處名稱、人物與數據皆為虛構或示範，統計數據另註明出處。你的作答只存在這台裝置的瀏覽器，不會上傳到任何伺服器。</p>
           <p class="mt8 faint">像素字型：Cubic 11（俐方體 11 號，SIL OFL 1.1）。</p></div>
         <div class="stack" style="--gap:6px"><b style="color:var(--ink)">頁面</b>${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}<a href="#/learn">學習成效榜</a></div>
-        <div class="stack" style="--gap:6px"><b style="color:var(--ink)">示範資料</b><a href="#" data-load-demo>載入示範帳號</a><a href="#" data-reset>重設為新帳號</a></div>
+        <details class="prototype-tools"><summary>原型操作</summary><div class="row"><a href="#" data-load-demo>載入示範帳號</a><a href="#" data-reset>重設為新帳號</a></div></details>
       </div></footer>`;
     document.addEventListener('click', e => {
       if (e.target.closest('[data-theme-toggle]')) { APP.theme.set(APP.theme.effective() === 'dark' ? 'light' : 'dark'); paintChrome(); }
@@ -93,7 +94,9 @@
       active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
     });
     const lv = level(s.xp);
-    $('[data-pill]').innerHTML = s.onboarded
+    const judging = /^#\/(?:$|try(?:\/review)?$|company$|verify\/|p\/)/.test(hash);
+    $('[data-pill]').hidden = judging;
+    $('[data-pill]').innerHTML = judging ? '' : s.onboarded
       ? `<span class="avatar" style="background:var(--night);padding:2px">${px.avatar(s.user.name, 24)}</span><span class="who">${esc(s.user.name)} <span class="lv">LV.${lv.lv}</span></span>`
       : `<span class="avatar">${icon('user')}</span><span class="who">訪客</span>`;
     $('[data-demo]').innerHTML = s.demo ? `<button class="chip" data-demo-chip style="border-color:var(--accent);background:var(--accent-soft)">${icon('star')}示範模式</button>` : '';
@@ -157,7 +160,7 @@
           s.user.name = name; s.user.who = $('[data-who]', bg).value; s.user.school = $('[data-school]', bg).value.trim();
           const em = $('[data-email]', bg).value.trim();
           if (verified === 'edu' && em === verifiedEmail) { s.user.schoolVerified = true; s.user.email = em; }
-          else if (verified === 'edu') { s.user.schoolVerified = false; toast('信箱已更改，學籍驗證未完成', 'warn'); }
+          else if (verified === 'edu') { s.user.schoolVerified = false; toast('信箱已更改，學校信箱驗證未完成', 'warn'); }
           if (verified === 'tp') s.user.idVerified = true;
           const anx = bg.querySelector('[name=anx]:checked'); if (anx) s.anxiety.pre = +anx.value;
           s.onboarded = true; s.demo = false; APP.store.save();
@@ -178,7 +181,7 @@
             $('[data-code]', bg).focus();
           }
           if (e.target.closest('[data-verify]')) {
-            if (code && $('[data-code]', bg).value.trim() === code) { verified = 'edu'; verifiedEmail = $('[data-email]', bg).value.trim(); $('[data-codehint]', bg).innerHTML = '<span style="color:var(--teal);font-weight:700">✓ 學籍已驗證</span>'; toast('學校信箱驗證成功', 'ok'); }
+            if (code && $('[data-code]', bg).value.trim() === code) { verified = 'edu'; verifiedEmail = $('[data-email]', bg).value.trim(); $('[data-codehint]', bg).innerHTML = '<span style="color:var(--teal);font-weight:700">✓ 學校信箱已驗證</span>'; toast('學校信箱驗證成功', 'ok'); }
             else toast('驗證碼不正確', 'bad');
           }
           if (e.target.closest('[data-tp]')) { verified = 'tp'; e.target.closest('[data-tp]').outerHTML = '<span class="tag tag-ok">✓ 已以臺北通完成實名驗證（示範）</span>'; }

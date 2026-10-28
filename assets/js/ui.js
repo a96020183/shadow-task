@@ -184,7 +184,7 @@
     const top = nice[nice.length - 1];
     data.forEach((d, i) => {
       const bh = (h - padT - padB) * d.v / top, x = padL + step * i + (step - bw) / 2, y = h - padB - bh;
-      g += `<path d="${barPath(x, y, bw, bh, 4, 'up')}" fill="var(--series-1)"/>`;
+      g += `<path d="${barPath(x, y, bw, bh, 4, 'up')}" fill="${i === data.length - 1 ? 'var(--teal)' : 'var(--ink)'}"/>`;
       g += `<rect x="${padL + step * i}" y="${padT}" width="${step}" height="${h - padT - padB}" fill="transparent" data-tip="${esc(d.n)}：${d.v.toLocaleString()}${unit}"/>`;
       g += `<text x="${x + bw / 2}" y="${h - 8}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${esc(d.n)}</text>`;
       if (i === data.length - 1) g += `<text x="${x + bw / 2}" y="${y - 7}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)" class="tnum">${d.v.toLocaleString()}</text>`;
@@ -230,7 +230,7 @@
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) d += `M${x + 4},${y + 4}h1v1h-1z`;
     return `<svg viewBox="0 0 ${n + 8} ${n + 8}" shape-rendering="crispEdges" role="img" aria-label="驗證 QR code"><rect width="${n + 8}" height="${n + 8}" fill="#fff"/><path d="${d}" fill="#15171c"/></svg>`;
   }
-  const verifyURL = vid => (location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
+  const verifyURL = (vid, online = false) => (online || location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
 
   APP.ui = { qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
 })();
