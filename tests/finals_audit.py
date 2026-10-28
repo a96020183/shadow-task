@@ -106,7 +106,7 @@ with sync_playwright() as pw:
     assert page.locator('.try-track').count()==0
     page.locator('a[href="#/verify/TPE-TRY-2026"]').click()
     assert page.locator('.try-stamp').is_visible()
-    assert '提示後答對' in page.locator('#view').inner_text()
+    assert any(k in page.locator('#view').inner_text() for k in ('提示後答對', '再試後找到', '看答案後確認'))
     check_qr(page, '.try-qr svg', 'try-qr.png', 'https://a96020183.github.io/shadow-task/#/verify/TPE-TRY-2026')
     page.locator('a[href="#/onepage?try=1"]').click()
     assert page.locator('.onepage').is_visible()

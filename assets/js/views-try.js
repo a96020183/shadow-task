@@ -37,11 +37,11 @@
   }
   const options = key => `<div class="try-options" role="group" aria-label="${key === 'adjustment' ? '選擇調整方式' : '選擇決策理由'}">${choices[key].map((label, i) => `<button class="px-card try-option" data-choice="${key}" data-value="${i}" aria-pressed="false"><span>${label}</span>${icon('arrowRight')}</button>`).join('')}</div>`;
   const checks = () => [
-    ['發現錯誤', state.revealed || state.misses > 0, `重複 1 筆＋取消 1 筆，實際 ${correct} 人`],
-    ['理解需求', !!state.hints.adjustment, '依預算限制調整推廣方法'],
-    ['說明負責', !!state.hints.reason, '用實際到場數檢查效果']
+    ['發現錯誤', state.revealed || state.misses > 0, `重複 1 筆＋取消 1 筆，實際 ${correct} 人`, state.revealed ? '看答案後確認' : state.misses > 0 ? '再試後找到' : '答對'],
+    ['理解需求', !!state.hints.adjustment, '依預算限制調整推廣方法', state.hints.adjustment ? '提示後答對' : '答對'],
+    ['說明負責', !!state.hints.reason, '用實際到場數檢查效果', state.hints.reason ? '提示後答對' : '答對']
   ];
-  const marks = () => `<ul class="try-checks">${checks().map(([name, hinted, detail], i) => `<li style="--mark-delay:${i * 80}ms"><div><b>${name}</b><span class="result-mark ${hinted ? 'hinted' : ''}"><i aria-hidden="true"></i>${hinted ? '提示後答對' : '答對'}</span></div><p>${detail}</p></li>`).join('')}</ul><p class="try-note">拆解問題、驗證修正，要做完整工單才評。</p>`;
+  const marks = () => `<ul class="try-checks">${checks().map(([name, hinted, detail, label], i) => `<li style="--mark-delay:${i * 80}ms"><div><b>${name}</b><span class="result-mark ${hinted ? 'hinted' : ''}"><i aria-hidden="true"></i>${label}</span></div><p>${detail}</p></li>`).join('')}</ul><p class="try-note">拆解問題、驗證修正，要做完整工單才評。</p>`;
   const stamp = () => '<div class="try-stamp"><b>完成體驗</b><small>示範・非正式核發</small></div>';
   const qr = () => `<div class="try-qr"><a href="${APP.ui.verifyURL(VID, true)}" aria-label="開啟線上版體驗查驗頁">${APP.ui.qrSVG(APP.ui.verifyURL(VID, true))}</a><div><b>驗證碼</b><p class="mono">${VID}</p><p class="try-note">QR 指向線上版同一查驗網址。這次作答只在目前分頁；換裝置會看到示範說明，不會取得你的作答。</p></div></div>`;
   const result = () => `<div class="try-result-head"><h1 id="try-title" tabindex="-1">工單履歷<br>已完成</h1>${stamp()}</div><p class="try-official">正式版：由臺北市政府青年局核發，企業掃 QR code 就能查驗。</p><p class="try-note">青年市集・60 秒體驗，以下只記錄這次作答。</p>${marks()}<a class="try-text-link" href="#/verify/${VID}">查驗這張證明 ${icon('arrowRight')}</a><p class="try-takeaway">接著，看看完整工單的回答有什麼不同。</p><a class="px-btn lg try-review-link" href="#/try/review">用企業的眼光看：<br>一位青年怎麼回答同一題 →</a><a class="try-text-link" href="#/tasks">看更多工單（完整版） ${icon('arrowRight')}</a><button class="try-text-link" data-restart>再體驗一次 ${icon('refresh')}</button>`;
@@ -98,7 +98,7 @@
       } else {
         state.misses++;
         state.wrongRow = i;
-        if (state.misses >= 2) { state.revealed = true; state.found.duplicate ??= 3; state.found.cancel = 4; }
+        if (state.misses >= 2) { state.revealed = true; if (state.found.duplicate == null) state.found.duplicate = 3; state.found.cancel = 4; }
       }
       updateRows();
       if (caught()) {
