@@ -57,11 +57,10 @@
     return `<svg class="${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
   }
 
-  const LOGO = `<svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
-    <rect x="3" y="7" width="30" height="24" rx="5" fill="var(--ink)" transform="rotate(-6 18 19)" opacity=".18"/>
-    <path d="M7 9h26a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6v-4a2 2 0 0 1 2-2z" fill="var(--accent)"/>
-    <path d="M26 9v18" stroke="var(--accent-ink)" stroke-width="1.6" stroke-dasharray="2.4 2.4"/>
-    <path d="m11 18 3.2 3.2L21 14.5" fill="none" stroke="var(--accent-ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  const LOGO = `<svg class="brand-mark" viewBox="0 0 40 40" shape-rendering="crispEdges" aria-hidden="true">
+    <path d="M6 10h30v24H6z" fill="var(--px-drop)"/>
+    <path d="M4 6h28v4h4v8h-4v4h4v8H4v-8h4v-4H4z" fill="var(--accent)"/>
+    <path d="M24 10h2v4h-2zm0 8h2v4h-2zm0 8h2v2h-2zM10 18h4v4h-4zm4 4h4v4h-4zm4-4h4v4h-4zm4-4h2v4h-2z" fill="var(--accent-ink)"/>
   </svg>`;
 
   /* ---------- toast & modal ---------- */
@@ -196,7 +195,7 @@
   function hbars(data, { unit = '', max: scaleMax } = {}) {
     const max = scaleMax || Math.max(...data.map(d => d.v));
     return `<div class="chart-box">${data.map(d => `<div class="funnel-row" data-tip="${esc(d.n)}：${d.v.toLocaleString()}${unit}">
-      <span>${esc(d.n)}</span><div><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:24px"><path d="${barPath(0, 0, Math.max(1.5, 100 * d.v / max), 24, 4, 'right')}" fill="var(--series-1)" vector-effect="non-scaling-stroke"/></svg></div><b>${d.v.toLocaleString()}${esc(unit)}</b>${d.target ? `<span class="bar-target">目標 ${esc(d.target)}</span>` : ""}</div>`).join('')}<div class="tip"></div></div>`;
+      <span>${esc(d.n)}</span><div><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:24px"><path d="${barPath(0, 0, Math.max(1.5, 100 * d.v / max), 24, 0, 'right')}" fill="var(--series-1)" vector-effect="non-scaling-stroke"/></svg></div><b>${d.v.toLocaleString()}${esc(unit)}</b>${d.target ? `<span class="bar-target">目標 ${esc(d.target)}</span>` : ""}</div>`).join('')}<div class="tip"></div></div>`;
   }
 
   function niceTicks(max) {

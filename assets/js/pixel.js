@@ -215,27 +215,27 @@
     let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     const R = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
     let g = '';
-    const sky = ['#141a3a', '#18204a', '#1d2858', '#243366', '#2c3f78', '#38508a'];
+    const sky = Array.from({ length: 6 }, (_, i) => `var(--sky-${i + 1})`);
     sky.forEach((c, i) => { g += R(0, i * 9, W, 10, c); });
-    for (let i = 0; i < 46; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 30); g += R(x, y, 1, 1, rnd() > .8 ? '#ffc93c' : '#cfd8ff'); }
-    g += R(28, 8, 6, 6, '#fff3cc') + R(27, 9, 8, 4, '#fff3cc') + R(29, 7, 4, 8, '#fff3cc') + R(30, 9, 2, 2, '#ffe28a');
+    for (let i = 0; i < 46; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 30); g += R(x, y, 1, 1, rnd() > .8 ? 'var(--sky-orb)' : 'var(--sky-star)'); }
+    g += R(28, 8, 6, 6, 'var(--sky-orb)') + R(27, 9, 8, 4, 'var(--sky-orb)') + R(29, 7, 4, 8, 'var(--sky-orb)');
     // 象山
     for (let x = 0; x < W; x++) {
       const hgt = Math.max(0, Math.round(16 + 7 * Math.sin(x / 19) + 4 * Math.sin(x / 7.3 + 1)));
-      g += R(x, H - hgt - 14, 1, hgt + 14, '#24305e');
+      g += R(x, H - hgt - 14, 1, hgt + 14, 'var(--sky-mountain)');
     }
     // 樓群
     let x = 0;
     while (x < W) {
       const bw = 6 + Math.floor(rnd() * 10), bh = 10 + Math.floor(rnd() * 22);
       if (x > 137 && x < 164) { x += bw; continue; }
-      const col = rnd() > .5 ? '#0f1430' : '#131a3c';
+      const col = rnd() > .5 ? 'var(--sky-building)' : 'var(--sky-building-alt)';
       g += R(x, H - bh, bw, bh, col);
-      for (let wy = H - bh + 2; wy < H - 2; wy += 3) for (let wx = x + 1; wx < x + bw - 1; wx += 2) if (rnd() > .62) g += R(wx, wy, 1, 1, rnd() > .25 ? '#ffc93c' : '#86b6ef');
+      for (let wy = H - bh + 2; wy < H - 2; wy += 3) for (let wx = x + 1; wx < x + bw - 1; wx += 2) if (rnd() > .62) g += R(wx, wy, 1, 1, rnd() > .25 ? 'var(--sky-window)' : 'var(--sky-window-alt)');
       x += bw + (rnd() > .7 ? 1 : 0);
     }
     // 臺北 101
-    const cx = 150, ink = '#0d1230', glass = '#1f6e7a', lit = '#7fe0c9';
+    const cx = 150, ink = 'var(--sky-tower)', glass = 'var(--sky-glass)', lit = 'var(--sky-lit)';
     g += R(cx - 9, H - 8, 19, 8, ink);
     let y = H - 8;
     for (let seg = 0; seg < 8; seg++) {
@@ -246,7 +246,7 @@
       }
     }
     g += R(cx - 3, y - 4, 7, 4, ink) + R(cx - 1, y - 7, 3, 3, ink) + R(cx, y - 15, 1, 8, '#9fb0d8') + R(cx, y - 16, 1, 1, '#e34948');
-    g += R(0, H - 2, W, 2, '#0b0f26');
+    g += R(0, H - 2, W, 2, 'var(--sky-tower)');
     [[148,29],[152,37],[148,45],[42,53]].forEach(([wx,wy],i) => { g += `<rect class="sky-window" style="--window-delay:${i * 700}ms" x="${wx}" y="${wy}" width="1" height="1" fill="#ffc93c"/>`; });
     return `<svg class="px-skyline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">${g}</svg>`;
   }

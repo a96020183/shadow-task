@@ -1,0 +1,633 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-28T18:11:57.107244Z",
+  "title": "Design System: 影子工單｜C 像素城市・任務板",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "任務黃",
+        "tonalRamp": [
+          "oklch(15.00% 0.1592 86.42)",
+          "oklch(26.43% 0.1592 86.42)",
+          "oklch(37.86% 0.1592 86.42)",
+          "oklch(49.29% 0.1592 86.42)",
+          "oklch(60.71% 0.1592 86.42)",
+          "oklch(72.14% 0.1592 86.42)",
+          "oklch(83.57% 0.1592 86.42)",
+          "oklch(95.00% 0.1592 86.42)"
+        ]
+      },
+      "accent-ink": {
+        "role": "neutral",
+        "displayName": "夜間・主要鍵文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0598 260.41)",
+          "oklch(26.43% 0.0598 260.41)",
+          "oklch(37.86% 0.0598 260.41)",
+          "oklch(49.29% 0.0598 260.41)",
+          "oklch(60.71% 0.0598 260.41)",
+          "oklch(72.14% 0.0598 260.41)",
+          "oklch(83.57% 0.0598 260.41)",
+          "oklch(95.00% 0.0598 260.41)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "夜間・城市底色",
+        "tonalRamp": [
+          "oklch(15.00% 0.0681 264.78)",
+          "oklch(26.43% 0.0681 264.78)",
+          "oklch(37.86% 0.0681 264.78)",
+          "oklch(49.29% 0.0681 264.78)",
+          "oklch(60.71% 0.0681 264.78)",
+          "oklch(72.14% 0.0681 264.78)",
+          "oklch(83.57% 0.0681 264.78)",
+          "oklch(95.00% 0.0681 264.78)"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "夜間・次層表面",
+        "tonalRamp": [
+          "oklch(15.00% 0.0715 257.61)",
+          "oklch(26.43% 0.0715 257.61)",
+          "oklch(37.86% 0.0715 257.61)",
+          "oklch(49.29% 0.0715 257.61)",
+          "oklch(60.71% 0.0715 257.61)",
+          "oklch(72.14% 0.0715 257.61)",
+          "oklch(83.57% 0.0715 257.61)",
+          "oklch(95.00% 0.0715 257.61)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "夜間・任務面板",
+        "tonalRamp": [
+          "oklch(15.00% 0.0716 260.46)",
+          "oklch(26.43% 0.0716 260.46)",
+          "oklch(37.86% 0.0716 260.46)",
+          "oklch(49.29% 0.0716 260.46)",
+          "oklch(60.71% 0.0716 260.46)",
+          "oklch(72.14% 0.0716 260.46)",
+          "oklch(83.57% 0.0716 260.46)",
+          "oklch(95.00% 0.0716 260.46)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "夜間・主要文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0119 259.82)",
+          "oklch(26.43% 0.0119 259.82)",
+          "oklch(37.86% 0.0119 259.82)",
+          "oklch(49.29% 0.0119 259.82)",
+          "oklch(60.71% 0.0119 259.82)",
+          "oklch(72.14% 0.0119 259.82)",
+          "oklch(83.57% 0.0119 259.82)",
+          "oklch(95.00% 0.0119 259.82)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "夜間・次文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0301 256.01)",
+          "oklch(26.43% 0.0301 256.01)",
+          "oklch(37.86% 0.0301 256.01)",
+          "oklch(49.29% 0.0301 256.01)",
+          "oklch(60.71% 0.0301 256.01)",
+          "oklch(72.14% 0.0301 256.01)",
+          "oklch(83.57% 0.0301 256.01)",
+          "oklch(95.00% 0.0301 256.01)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "夜間・說明文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0420 256.25)",
+          "oklch(26.43% 0.0420 256.25)",
+          "oklch(37.86% 0.0420 256.25)",
+          "oklch(49.29% 0.0420 256.25)",
+          "oklch(60.71% 0.0420 256.25)",
+          "oklch(72.14% 0.0420 256.25)",
+          "oklch(83.57% 0.0420 256.25)",
+          "oklch(95.00% 0.0420 256.25)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "夜間・分隔線",
+        "tonalRamp": [
+          "oklch(15.00% 0.0656 254.70)",
+          "oklch(26.43% 0.0656 254.70)",
+          "oklch(37.86% 0.0656 254.70)",
+          "oklch(49.29% 0.0656 254.70)",
+          "oklch(60.71% 0.0656 254.70)",
+          "oklch(72.14% 0.0656 254.70)",
+          "oklch(83.57% 0.0656 254.70)",
+          "oklch(95.00% 0.0656 254.70)"
+        ]
+      },
+      "line-2": {
+        "role": "neutral",
+        "displayName": "夜間・結構框",
+        "tonalRamp": [
+          "oklch(15.00% 0.0710 258.32)",
+          "oklch(26.43% 0.0710 258.32)",
+          "oklch(37.86% 0.0710 258.32)",
+          "oklch(49.29% 0.0710 258.32)",
+          "oklch(60.71% 0.0710 258.32)",
+          "oklch(72.14% 0.0710 258.32)",
+          "oklch(83.57% 0.0710 258.32)",
+          "oklch(95.00% 0.0710 258.32)"
+        ]
+      },
+      "px-drop": {
+        "role": "neutral",
+        "displayName": "夜間・硬陰影色",
+        "tonalRamp": [
+          "oklch(15.00% 0.0498 263.56)",
+          "oklch(26.43% 0.0498 263.56)",
+          "oklch(37.86% 0.0498 263.56)",
+          "oklch(49.29% 0.0498 263.56)",
+          "oklch(60.71% 0.0498 263.56)",
+          "oklch(72.14% 0.0498 263.56)",
+          "oklch(83.57% 0.0498 263.56)",
+          "oklch(95.00% 0.0498 263.56)"
+        ]
+      },
+      "teal": {
+        "role": "secondary",
+        "displayName": "夜間・完成青綠",
+        "tonalRamp": [
+          "oklch(15.00% 0.1094 175.42)",
+          "oklch(26.43% 0.1094 175.42)",
+          "oklch(37.86% 0.1094 175.42)",
+          "oklch(49.29% 0.1094 175.42)",
+          "oklch(60.71% 0.1094 175.42)",
+          "oklch(72.14% 0.1094 175.42)",
+          "oklch(83.57% 0.1094 175.42)",
+          "oklch(95.00% 0.1094 175.42)"
+        ]
+      },
+      "teal-soft": {
+        "role": "secondary",
+        "displayName": "夜間・完成回饋底",
+        "tonalRamp": [
+          "oklch(15.00% 0.0451 206.49)",
+          "oklch(26.43% 0.0451 206.49)",
+          "oklch(37.86% 0.0451 206.49)",
+          "oklch(49.29% 0.0451 206.49)",
+          "oklch(60.71% 0.0451 206.49)",
+          "oklch(72.14% 0.0451 206.49)",
+          "oklch(83.57% 0.0451 206.49)",
+          "oklch(95.00% 0.0451 206.49)"
+        ]
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "夜間・修正紅",
+        "tonalRamp": [
+          "oklch(15.00% 0.1263 18.53)",
+          "oklch(26.43% 0.1263 18.53)",
+          "oklch(37.86% 0.1263 18.53)",
+          "oklch(49.29% 0.1263 18.53)",
+          "oklch(60.71% 0.1263 18.53)",
+          "oklch(72.14% 0.1263 18.53)",
+          "oklch(83.57% 0.1263 18.53)",
+          "oklch(95.00% 0.1263 18.53)"
+        ]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "夜間・提示藍",
+        "tonalRamp": [
+          "oklch(15.00% 0.0957 248.61)",
+          "oklch(26.43% 0.0957 248.61)",
+          "oklch(37.86% 0.0957 248.61)",
+          "oklch(49.29% 0.0957 248.61)",
+          "oklch(60.71% 0.0957 248.61)",
+          "oklch(72.14% 0.0957 248.61)",
+          "oklch(83.57% 0.0957 248.61)",
+          "oklch(95.00% 0.0957 248.61)"
+        ]
+      },
+      "light-paper": {
+        "role": "neutral",
+        "displayName": "白天・城市底色",
+        "tonalRamp": [
+          "oklch(15.00% 0.0182 250.59)",
+          "oklch(26.43% 0.0182 250.59)",
+          "oklch(37.86% 0.0182 250.59)",
+          "oklch(49.29% 0.0182 250.59)",
+          "oklch(60.71% 0.0182 250.59)",
+          "oklch(72.14% 0.0182 250.59)",
+          "oklch(83.57% 0.0182 250.59)",
+          "oklch(95.00% 0.0182 250.59)"
+        ]
+      },
+      "light-paper-2": {
+        "role": "neutral",
+        "displayName": "白天・次層表面",
+        "tonalRamp": [
+          "oklch(15.00% 0.0310 252.69)",
+          "oklch(26.43% 0.0310 252.69)",
+          "oklch(37.86% 0.0310 252.69)",
+          "oklch(49.29% 0.0310 252.69)",
+          "oklch(60.71% 0.0310 252.69)",
+          "oklch(72.14% 0.0310 252.69)",
+          "oklch(83.57% 0.0310 252.69)",
+          "oklch(95.00% 0.0310 252.69)"
+        ]
+      },
+      "light-card": {
+        "role": "neutral",
+        "displayName": "白天・任務面板",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 0.00)",
+          "oklch(26.43% 0.0000 0.00)",
+          "oklch(37.86% 0.0000 0.00)",
+          "oklch(49.29% 0.0000 0.00)",
+          "oklch(60.71% 0.0000 0.00)",
+          "oklch(72.14% 0.0000 0.00)",
+          "oklch(83.57% 0.0000 0.00)",
+          "oklch(95.00% 0.0000 0.00)"
+        ]
+      },
+      "light-ink": {
+        "role": "neutral",
+        "displayName": "白天・主要文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0725 259.76)",
+          "oklch(26.43% 0.0725 259.76)",
+          "oklch(37.86% 0.0725 259.76)",
+          "oklch(49.29% 0.0725 259.76)",
+          "oklch(60.71% 0.0725 259.76)",
+          "oklch(72.14% 0.0725 259.76)",
+          "oklch(83.57% 0.0725 259.76)",
+          "oklch(95.00% 0.0725 259.76)"
+        ]
+      },
+      "light-ink-2": {
+        "role": "neutral",
+        "displayName": "白天・次文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0660 253.43)",
+          "oklch(26.43% 0.0660 253.43)",
+          "oklch(37.86% 0.0660 253.43)",
+          "oklch(49.29% 0.0660 253.43)",
+          "oklch(60.71% 0.0660 253.43)",
+          "oklch(72.14% 0.0660 253.43)",
+          "oklch(83.57% 0.0660 253.43)",
+          "oklch(95.00% 0.0660 253.43)"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "白天・說明文字",
+        "tonalRamp": [
+          "oklch(15.00% 0.0583 252.57)",
+          "oklch(26.43% 0.0583 252.57)",
+          "oklch(37.86% 0.0583 252.57)",
+          "oklch(49.29% 0.0583 252.57)",
+          "oklch(60.71% 0.0583 252.57)",
+          "oklch(72.14% 0.0583 252.57)",
+          "oklch(83.57% 0.0583 252.57)",
+          "oklch(95.00% 0.0583 252.57)"
+        ]
+      },
+      "light-line": {
+        "role": "neutral",
+        "displayName": "白天・分隔線",
+        "tonalRamp": [
+          "oklch(15.00% 0.0426 248.34)",
+          "oklch(26.43% 0.0426 248.34)",
+          "oklch(37.86% 0.0426 248.34)",
+          "oklch(49.29% 0.0426 248.34)",
+          "oklch(60.71% 0.0426 248.34)",
+          "oklch(72.14% 0.0426 248.34)",
+          "oklch(83.57% 0.0426 248.34)",
+          "oklch(95.00% 0.0426 248.34)"
+        ]
+      },
+      "light-line-2": {
+        "role": "neutral",
+        "displayName": "白天・結構框",
+        "tonalRamp": [
+          "oklch(15.00% 0.0811 253.10)",
+          "oklch(26.43% 0.0811 253.10)",
+          "oklch(37.86% 0.0811 253.10)",
+          "oklch(49.29% 0.0811 253.10)",
+          "oklch(60.71% 0.0811 253.10)",
+          "oklch(72.14% 0.0811 253.10)",
+          "oklch(83.57% 0.0811 253.10)",
+          "oklch(95.00% 0.0811 253.10)"
+        ]
+      },
+      "light-px-drop": {
+        "role": "neutral",
+        "displayName": "白天・硬陰影色",
+        "tonalRamp": [
+          "oklch(15.00% 0.0520 252.96)",
+          "oklch(26.43% 0.0520 252.96)",
+          "oklch(37.86% 0.0520 252.96)",
+          "oklch(49.29% 0.0520 252.96)",
+          "oklch(60.71% 0.0520 252.96)",
+          "oklch(72.14% 0.0520 252.96)",
+          "oklch(83.57% 0.0520 252.96)",
+          "oklch(95.00% 0.0520 252.96)"
+        ]
+      },
+      "light-teal": {
+        "role": "secondary",
+        "displayName": "白天・完成青綠",
+        "tonalRamp": [
+          "oklch(15.00% 0.0880 174.49)",
+          "oklch(26.43% 0.0880 174.49)",
+          "oklch(37.86% 0.0880 174.49)",
+          "oklch(49.29% 0.0880 174.49)",
+          "oklch(60.71% 0.0880 174.49)",
+          "oklch(72.14% 0.0880 174.49)",
+          "oklch(83.57% 0.0880 174.49)",
+          "oklch(95.00% 0.0880 174.49)"
+        ]
+      },
+      "light-teal-soft": {
+        "role": "secondary",
+        "displayName": "白天・完成回饋底",
+        "tonalRamp": [
+          "oklch(15.00% 0.0331 172.82)",
+          "oklch(26.43% 0.0331 172.82)",
+          "oklch(37.86% 0.0331 172.82)",
+          "oklch(49.29% 0.0331 172.82)",
+          "oklch(60.71% 0.0331 172.82)",
+          "oklch(72.14% 0.0331 172.82)",
+          "oklch(83.57% 0.0331 172.82)",
+          "oklch(95.00% 0.0331 172.82)"
+        ]
+      },
+      "light-red": {
+        "role": "tertiary",
+        "displayName": "白天・修正紅",
+        "tonalRamp": [
+          "oklch(15.00% 0.1633 16.82)",
+          "oklch(26.43% 0.1633 16.82)",
+          "oklch(37.86% 0.1633 16.82)",
+          "oklch(49.29% 0.1633 16.82)",
+          "oklch(60.71% 0.1633 16.82)",
+          "oklch(72.14% 0.1633 16.82)",
+          "oklch(83.57% 0.1633 16.82)",
+          "oklch(95.00% 0.1633 16.82)"
+        ]
+      },
+      "light-blue": {
+        "role": "secondary",
+        "displayName": "白天・提示藍",
+        "tonalRamp": [
+          "oklch(15.00% 0.1285 256.33)",
+          "oklch(26.43% 0.1285 256.33)",
+          "oklch(37.86% 0.1285 256.33)",
+          "oklch(49.29% 0.1285 256.33)",
+          "oklch(60.71% 0.1285 256.33)",
+          "oklch(72.14% 0.1285 256.33)",
+          "oklch(83.57% 0.1285 256.33)",
+          "oklch(95.00% 0.1285 256.33)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "入口大標題",
+        "purpose": "首頁像素大字；手機縮為 44px。"
+      },
+      "headline": {
+        "displayName": "頁面標題",
+        "purpose": "頁面與任務標題；手機通常為 28px。"
+      },
+      "title": {
+        "displayName": "任務次標題",
+        "purpose": "委託單與次層標題。"
+      },
+      "body": {
+        "displayName": "閱讀內文",
+        "purpose": "主要內文、說明及對話使用系統黑體。"
+      },
+      "label": {
+        "displayName": "導航與標籤",
+        "purpose": "像素字用於短標籤、導航與 HUD。"
+      },
+      "button": {
+        "displayName": "行動鍵",
+        "purpose": "像素字操作標籤，主要行動可依情境放大。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow",
+        "value": "3px 3px 0 var(--px-drop)",
+        "purpose": "一般任務卡與按鈕。"
+      },
+      {
+        "name": "task-frame",
+        "value": "4px 4px 0 var(--px-drop)",
+        "purpose": "主要任務框與紀錄單。"
+      },
+      {
+        "name": "shadow-lg",
+        "value": "5px 5px 0 var(--px-drop)",
+        "purpose": "首頁城市舞台。"
+      },
+      {
+        "name": "pressed",
+        "value": "1px 1px 0 var(--px-drop)",
+        "purpose": "一般按鈕按下時。"
+      },
+      {
+        "name": "professional",
+        "value": "none",
+        "purpose": "專業端卡片、面板、按鈕與巢狀卡片。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-quick",
+        "value": "120ms",
+        "purpose": "短狀態轉換。"
+      },
+      {
+        "name": "dur-std",
+        "value": "240ms",
+        "purpose": "HUD 關卡完成。"
+      },
+      {
+        "name": "dur-slow",
+        "value": "420ms",
+        "purpose": "既有對話進場節奏。"
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.2,0,0,1)",
+        "purpose": "回饋與狀態轉換。"
+      },
+      {
+        "name": "ease-emph",
+        "value": "cubic-bezier(.05,.7,.1,1)",
+        "purpose": "既有修正數字的短回饋。"
+      },
+      {
+        "name": "ease-in",
+        "value": "cubic-bezier(.3,0,1,1)",
+        "purpose": "任務頁離場。"
+      },
+      {
+        "name": "px-steps",
+        "value": "steps(4,end)",
+        "purpose": "既有像素節奏轉換。"
+      },
+      {
+        "name": "clear-in",
+        "value": "320ms steps(3,end)",
+        "purpose": "結果標籤短進場。"
+      },
+      {
+        "name": "reduced-motion",
+        "value": "140ms cubic-bezier(.2,0,0,1)",
+        "purpose": "減少動態時保留透明度回饋，取消位移與抖動。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "navigation-collapse",
+        "value": "1180px"
+      },
+      {
+        "name": "mobile-layout",
+        "value": "760px"
+      },
+      {
+        "name": "base-grid-single-column",
+        "value": "640px"
+      },
+      {
+        "name": "narrow-phone",
+        "value": "380px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "主要按鈕",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "一般頁面的直角硬鍵；專業端沿用配色、字體與邊框，取消陰影。",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">開始體驗</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;min-width:44px;padding:10px 18px;border:2px solid var(--line-2,#728eb8);border-radius:0;font:400 17px/1.4 var(--pixel,\"Cubic 11\",system-ui,sans-serif);box-shadow:3px 3px 0 var(--px-drop,#061027);cursor:pointer;transition:background 180ms ease-out,transform 150ms ease-out;background:var(--accent,#ffc93c);color:var(--accent-ink,#10213e);} .ds-button-primary:hover{filter:none;border-color:var(--line-2,#728eb8);} .ds-button-primary:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;} .ds-button-primary:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--px-drop,#061027);} .ds-button-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;} @media(prefers-reduced-motion:reduce){.ds-button-primary:active{transform:none;} .ds-button-primary{transition:background-color 120ms var(--ease-out,cubic-bezier(.2,0,0,1));}}"
+    },
+    {
+      "name": "次要按鈕",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "一般頁面的直角硬鍵；專業端沿用配色、字體與邊框，取消陰影。",
+      "html": "<button class=\"ds-button-ghost\" type=\"button\">查看紀錄</button>",
+      "css": ".ds-button-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;min-width:44px;padding:10px 18px;border:2px solid var(--line-2,#728eb8);border-radius:0;font:400 17px/1.4 var(--pixel,\"Cubic 11\",system-ui,sans-serif);box-shadow:3px 3px 0 var(--px-drop,#061027);cursor:pointer;transition:background 180ms ease-out,transform 150ms ease-out;background:var(--card,#14294d);color:var(--ink,#f2f7ff);} .ds-button-ghost:hover{filter:none;border-color:var(--line-2,#728eb8);} .ds-button-ghost:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;} .ds-button-ghost:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--px-drop,#061027);} .ds-button-ghost:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;} @media(prefers-reduced-motion:reduce){.ds-button-ghost:active{transform:none;} .ds-button-ghost{transition:background-color 120ms var(--ease-out,cubic-bezier(.2,0,0,1));}}"
+    },
+    {
+      "name": "文字動作",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "低強度的補充操作，維持可點高度與鍵盤焦點。",
+      "html": "<button class=\"ds-button-text\" type=\"button\">查看說明</button>",
+      "css": ".ds-button-text{display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:44px;padding:8px 10px;border:2px solid transparent;border-radius:0;background:transparent;color:var(--ink,#f2f7ff);font:400 17px/1.4 var(--pixel,\"Cubic 11\",system-ui,sans-serif);cursor:pointer;box-shadow:none;transition:background 180ms ease-out,transform 150ms ease-out;} .ds-button-text:hover{background:var(--paper-2,#1b3458);} .ds-button-text:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;} .ds-button-text:active{transform:translate(2px,2px);} @media(prefers-reduced-motion:reduce){.ds-button-text:active{transform:none;}}"
+    },
+    {
+      "name": "文字輸入",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "系統黑體、面板底與清楚外框；輸入內容不使用像素字。",
+      "html": "<label class=\"ds-field\">搜尋工單<input class=\"ds-input\" type=\"search\" placeholder=\"輸入關鍵字\"></label>",
+      "css": ".ds-field{display:grid;gap:6px;color:var(--ink-2,#d2e0f3);font:400 16px/1.65 var(--font,system-ui,sans-serif);} .ds-input{min-height:48px;min-width:0;padding:10px 12px;border:2px solid var(--line-2,#728eb8);border-radius:0;background:var(--card,#14294d);color:var(--ink,#f2f7ff);font:400 16px/1.65 var(--font,system-ui,sans-serif);caret-color:var(--ink,#f2f7ff);transition:border-color .15s;} .ds-input::placeholder{color:var(--muted,#b8cbe5);opacity:1;} .ds-input:hover{border-color:var(--line-2,#728eb8);} .ds-input:focus{border-color:var(--blue,#92c9ff);box-shadow:none;} .ds-input:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;}"
+    },
+    {
+      "name": "頂部導航",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "實色導航與像素標籤；目前入口反白。手機另使用固定底部分頁列。",
+      "html": "<nav class=\"ds-nav\" aria-label=\"主要導航\"><a class=\"ds-nav-link\" href=\"#/\" aria-current=\"page\">首頁</a><a class=\"ds-nav-link\" href=\"#/try\">體驗</a><a class=\"ds-nav-link\" href=\"#/company\">企業</a></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;gap:0;padding:8px;background:var(--paper,#0d1b3d);border-bottom:3px solid var(--line-2,#728eb8);font:400 16px/1.65 var(--pixel,\"Cubic 11\",system-ui,sans-serif);} .ds-nav-link{display:flex;align-items:center;min-height:44px;padding:8px;border-radius:0;text-decoration:none;color:var(--muted,#b8cbe5);transition:background .15s,color .15s;} .ds-nav-link:hover{background:var(--paper-2,#1b3458);color:var(--ink,#f2f7ff);} .ds-nav-link[aria-current]{background:var(--ink,#f2f7ff);color:var(--paper,#0d1b3d);} .ds-nav-link:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;}"
+    },
+    {
+      "name": "篩選項",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "可點篩選項以反白表示選取，與純狀態標籤區分。",
+      "html": "<button class=\"ds-chip\" type=\"button\" aria-pressed=\"false\">全部</button>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:5px 12px;border:1px solid var(--line,#365173);border-radius:0;background:var(--card,#14294d);color:var(--ink-2,#d2e0f3);font:400 16px/1.65 var(--pixel,\"Cubic 11\",system-ui,sans-serif);cursor:pointer;transition:background 180ms ease-out,transform 150ms ease-out;} .ds-chip:hover{border-color:var(--line-2,#728eb8);} .ds-chip:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;}"
+    },
+    {
+      "name": "已選篩選項",
+      "kind": "chip",
+      "refersTo": "chip-selected",
+      "description": "可點篩選項以反白表示選取，與純狀態標籤區分。",
+      "html": "<button class=\"ds-chip-selected\" type=\"button\" aria-pressed=\"true\">全部</button>",
+      "css": ".ds-chip-selected{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:5px 12px;border:1px solid var(--ink,#f2f7ff);border-radius:0;background:var(--ink,#f2f7ff);color:var(--paper,#0d1b3d);font:400 16px/1.65 var(--pixel,\"Cubic 11\",system-ui,sans-serif);cursor:pointer;transition:background 180ms ease-out,transform 150ms ease-out;} .ds-chip-selected:hover{border-color:var(--line-2,#728eb8);} .ds-chip-selected:focus-visible{outline:3px solid var(--blue,#92c9ff);outline-offset:4px;}"
+    },
+    {
+      "name": "任務面板",
+      "kind": "card",
+      "refersTo": "task-card",
+      "description": "一般工作內容的直角面板；專業端與巢狀面板取消陰影。",
+      "html": "<article class=\"ds-task-card\"><h3 class=\"ds-task-title\">工單 #0142</h3><p class=\"ds-task-copy\">青年市集</p></article>",
+      "css": ".ds-task-card{padding:24px;border:2px solid var(--line-2,#728eb8);border-radius:0;background:var(--card,#14294d);color:var(--ink,#f2f7ff);box-shadow:3px 3px 0 var(--px-drop,#061027);} .ds-task-title{margin:0;font:400 22px/1.35 var(--pixel,\"Cubic 11\",system-ui,sans-serif);} .ds-task-copy{margin:8px 0 0;font:400 16px/1.65 var(--font,system-ui,sans-serif);color:var(--ink-2,#d2e0f3);} @media(max-width:760px){.ds-task-card{padding:16px;}}"
+    },
+    {
+      "name": "完成回饋",
+      "kind": "custom",
+      "refersTo": "feedback-good",
+      "description": "青綠回饋表面，標題與文字說明共同呈現完成狀態。",
+      "html": "<section class=\"ds-feedback\" role=\"status\"><b class=\"ds-feedback-title\">已完成</b><p class=\"ds-feedback-copy\">查看你的體驗紀錄。</p></section>",
+      "css": ".ds-feedback{padding:16px;border:2px solid var(--teal,#73e1c6);border-radius:0;background:var(--teal-soft,#163e43);color:var(--ink,#f2f7ff);} .ds-feedback-title{display:block;margin-bottom:8px;font:400 28px/1.3 var(--pixel,\"Cubic 11\",system-ui,sans-serif);} .ds-feedback-copy{margin:0;font:400 16px/1.65 var(--font,system-ui,sans-serif);} @media(max-width:760px){.ds-feedback{padding:14px;}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "像素城市・任務板",
+    "overview": "臺北城市是共同場景，工作任務以直角框、像素標題、關卡點與角色對話呈現。深色預設如夜間城市，白天模式採藍白表面；內文維持清楚的系統黑體。企業與市府介面沿用同一套字體與框線，但收斂陰影及裝飾，讓回答、紀錄與指標保持主角。\n\n本文件記錄已實作的視覺系統。執行時來源為 `assets/css/city.css`；`index.html` 依序載入 `app.css` → `pixel.css` → `finals.css` → `city.css`，最後一層承載 C 版視覺覆寫。新增畫面沿用此順序，勿直接恢復早期樣式表中的圓角、舊色票與專業端字體。產品事實與示範聲明以 `PRODUCT.md` 為準。",
+    "keyCharacteristics": [
+      "深夜藍與藍白兩套城市表面。",
+      "Cubic 11 負責標題、按鈕、導航與數字；系統黑體負責閱讀。",
+      "直角粗框、沒有模糊的硬陰影、黃色主要行動。",
+      "青綠表達已完成與正確；專業端以較平靜的列表與表格呈現。"
+    ],
+    "rules": [
+      {
+        "name": "The Theme Exceptions Rule",
+        "body": "QR 圖碼與安靜區固定白底；頂部原型提示列在白天仍為深色實底配淺色文字。這些是掃碼及閱讀所需的局部例外，不由一般面板色覆蓋。",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Body Rule",
+        "body": "主要內文至少 16px，像素字限於辨識與操作層；長段落使用系統黑體。",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet Professional Rule",
+        "body": "企業、市府等專業頁的卡片、面板與按鈕取消投影，仍保留直角與結構框。巢狀卡片不重複加陰影。",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** 以最後載入的 city.css 為執行時視覺來源，使用既有語意變數與深淺色覆寫。",
+      "**Do** 保留至少 16px 的主要內文、44px 觸控目標、清楚焦點及安全區。",
+      "**Do** 讓主要行動用黃、正確與完成用青綠，並以文字補充狀態。",
+      "**Do** 保留 QR 白底、原型提示與非市府核發的示範說明。",
+      "**Do** 使用既有城市 SVG、像素頭像與本地字型，專業端收斂陰影。"
+    ],
+    "donts": [
+      "**Don't** 引入米白奶油底、紫粉漸層、玻璃面板或模糊軟陰影。",
+      "**Don't** 把長段內文改成過小像素字，或把所有內容改成重複圓角卡片。",
+      "**Don't** 使用 emoji 取代既有圖示，或增加滿版與循環裝飾動畫。",
+      "**Don't** 把 CLEAR、青綠結果、QR 或示範紀錄呈現成官方核發徽章。"
+    ]
+  }
+}

@@ -1,5 +1,5 @@
 """本機驗收：python -X utf8 tests/finals_audit.py。
-需要已安裝的 Python Playwright、Chromium、OpenCV 與 NumPy（實際解碼 QR）。
+需要已安裝的 Python Playwright、Chrome、OpenCV 與 NumPy（實際解碼 QR）。
 """
 import json
 from pathlib import Path
@@ -143,7 +143,7 @@ def audit_round_three(page):
     assert page.locator('.home-action .btn').evaluate("e=>getComputedStyle(e).borderRadius==='0px' && getComputedStyle(e).boxShadow!=='none'")
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch(headless=True)
+    browser = pw.chromium.launch(channel='chrome', headless=True)
     context = browser.new_context(viewport={'width':390,'height':844}, device_scale_factor=1, color_scheme='light')
     page = context.new_page()
     errors, external, failed_resources = [], [], []
@@ -154,6 +154,8 @@ with sync_playwright() as pw:
     page.on('response', lambda r: failed_resources.append(r.url) if r.status>=400 else None)
     page.goto(base+'#/')
     page.wait_for_selector('.home-action')
+    assert page.evaluate('APP.theme.effective()') == 'dark'
+    page.evaluate("APP.theme.set('light')")
     page.screenshot(path=str(OUT/'home-390.png'),full_page=True)
     assert page.locator('.home-action a').bounding_box()['y'] < 700
     assert page.evaluate("localStorage.getItem('shadowtask.v1')") is None
@@ -252,6 +254,7 @@ with sync_playwright() as pw:
     # All five screens plus reviewed evidence, at four widths and all theme/motion combinations.
     for theme, motion in [('light','no-preference'),('dark','no-preference'),('light','reduce'),('dark','reduce')]:
         page.emulate_media(color_scheme=theme, reduced_motion=motion)
+        page.evaluate('(theme)=>APP.theme.set(theme)', theme)
         for width in [360,390,430,1280]:
             page.set_viewport_size({'width':width,'height':844 if width<500 else 900})
             page.evaluate("location.hash='#/try'")
@@ -290,6 +293,7 @@ with sync_playwright() as pw:
             page.wait_for_selector('[data-restart]')
             restart(page)
     page.emulate_media(color_scheme='light', reduced_motion='no-preference')
+    page.evaluate("APP.theme.set('light')")
     for width in [360,390,430,1280]:
         page.set_viewport_size({'width':width,'height':844 if width<500 else 900})
         for route in routes:

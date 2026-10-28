@@ -14,6 +14,7 @@
     [/^\/defense\/([\w-]+)$/, m => V.defense(m[1])],
     [/^\/result\/([\w-]+)$/, m => V.result(m[1])],
     [/^\/portfolio$/, () => V.portfolio()],
+    [/^\/resume$/, () => V.portfolio()],
     [/^\/p\/([\w-]+)$/, m => V.publicPortfolio(m[1])],
     [/^\/company$/, () => V.company()],
     [/^\/gov$/, () => V.gov()],
@@ -28,7 +29,7 @@
   const NAV = [
     ['#/tasks', '公會大廳', /^#\/(tasks|task|work|defense|result)/],
     ['#/squad', '戰隊', /^#\/(squad|join)/],
-    ['#/portfolio', '工單履歷', /^#\/(portfolio|onepage|verify)/],
+    ['#/portfolio', '工單履歷', /^#\/(portfolio|resume|onepage|verify)/],
     ['#/company', '企業專區', /^#\/(company|p\/)/],
     ['#/gov', '市府儀表板', /^#\/gov/],
     ['#/mentor', '職人答辯官', /^#\/mentor/],
@@ -90,7 +91,7 @@
     $$('[data-links] a').forEach((a, i) => a.classList.toggle('active', NAV[i][2].test(hash)));
     $$('.mobile-nav a').forEach(a => {
       const h = a.getAttribute('href');
-      const active = h === '#/' ? /^#\/(?:try)?$/.test(hash) : h === '#/tasks' ? /^#\/(tasks|task|work|defense|result|squad|join|portfolio|onepage|learn)/.test(hash) : hash.startsWith(h);
+      const active = h === '#/' ? /^#\/(?:try(?:\/review)?)?$/.test(hash) : h === '#/tasks' ? /^#\/(tasks|task|work|defense|result|squad|join|portfolio|resume|onepage|learn)/.test(hash) : hash.startsWith(h);
       active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
     });
     const lv = level(s.xp);

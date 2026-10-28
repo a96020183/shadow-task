@@ -99,7 +99,7 @@
     effective() {
       const v = document.documentElement.getAttribute('data-theme') || this.get();
       if (v) return v;
-      return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'dark';
     }
   };
   const t = APP.theme.get();
