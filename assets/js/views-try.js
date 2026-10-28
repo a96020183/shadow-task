@@ -17,7 +17,7 @@
   const answers = { adjustment: 0, reason: 1 };
   const steps = ['接工單', '抓錯', '應變', '說明', '看紀錄'];
   const caught = () => Object.keys(state.found).length === 2;
-  const chat = (name, message, seed, typing = false) => `<div class="try-chat">${APP.px.avatar(seed, 32)}<div><div class="chat-meta">${name}<span>剛剛</span></div><div class="chat-bubble${typing ? ' chat-arrive' : ''}">${typing ? '<span class="chat-typing" aria-hidden="true">…輸入中</span>' : ''}<p>${message}</p></div></div></div>`;
+  const chat = (name, message, seed, typing = false) => `<div class="try-chat">${APP.px.avatar(seed, 32)}<div><div class="chat-meta">${name}</div><div class="chat-bubble${typing ? ' chat-arrive' : ''}"><p>${message}</p></div></div></div>`;
   const robot = () => '<svg class="try-robot" viewBox="0 0 16 16" width="32" height="32" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M7 0h2v3h4v2h2v8h-2v2H3v-2H1V5h2V3h4z"/><path fill="var(--paper)" d="M3 5h10v8H3z"/><path fill="currentColor" d="M5 7h2v2H5zm4 0h2v2H9zM5 11h6v1H5z"/></svg>';
   const ai = () => `<div class="try-chat try-ai">${robot()}<div><div class="chat-meta">AI 助手<span>已完成計算</span></div><div class="chat-bubble">共有 <span class="ai-total">${total}</span><strong class="ai-correct" hidden>${correct}</strong> 人報名，我已經幫你排除重複資料了。</div></div></div>`;
   const dataTable = (interactive = false) => `<table class="try-table${interactive ? ' interactive' : ''}"><caption>報名資料節錄・虛構示範</caption><thead><tr><th scope="col">編號</th><th scope="col">來源</th><th scope="col">人數</th><th scope="col">備註</th></tr></thead><tbody>${rows.map((r, i) => `<tr data-row="${i}"><td>${interactive ? `<button class="row-hit" data-row-pick="${i}" aria-label="第 ${i + 1} 列，${r.join('，')}" aria-pressed="false">${r[0]}</button>` : r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td><td><span data-row-status>${r[3]}</span></td></tr>`).join('')}</tbody></table>`;
@@ -50,7 +50,7 @@
   const ready = () => state.step === 1 || state.step === 2 && caught() || state.step === 3 && state.adjustment === answers.adjustment || state.step === 4 && state.reason === answers.reason;
   function screen() {
     let body = '';
-    if (state.step === 1) body = `<h1 id="try-title" tabindex="-1">今天，接下這張工單。</h1>${chat('市集主管', '重複報名的只算一次，幫我看實際有幾人，再想想怎麼推廣下一場。', 'fair-supervisor', true)}${dataTable()}<p class="try-instruction">先看資料，下一步請 AI 幫忙。</p>`;
+    if (state.step === 1) body = `<h1 id="try-title" tabindex="-1">今天，接下這張工單。</h1>${chat('市集主管', '上一場青年市集的報名表在下面。幫我算實際有幾人報名，下一場照這個人數準備。', 'fair-supervisor', true)}${dataTable()}<p class="try-instruction">先看資料，下一步請 AI 幫忙。</p>`;
     if (state.step === 2) body = `<h1 id="try-title" tabindex="-1">AI 說得對嗎？</h1>${ai()}<p class="try-instruction">請點出有問題的資料列</p>${dataTable(true)}`;
     if (state.step === 3) body = `<h1 id="try-title" tabindex="-1">主管改需求了。</h1>${chat('市集主管', '預算砍半，先停掉付費廣告。下一場怎麼辦？', 'fair-supervisor', true)}<p class="try-instruction">你會怎麼調整？</p>${options('adjustment')}`;
     if (state.step === 4) body = `<h1 id="try-title" tabindex="-1">職人多問了一句。</h1>${chat('職人答辯官・資深活動企劃', '改用免費校園公告，你怎麼知道這樣有效？', 'fair-mentor')}<p class="try-instruction">選一個說得清楚的理由。</p>${options('reason')}`;

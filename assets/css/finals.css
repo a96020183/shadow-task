@@ -221,7 +221,6 @@ body[data-route="try"] .mobile-nav, body[data-route="try"] .foot, body[data-rout
 .chat-bubble { position: relative; background: var(--card); border: 1px solid var(--line-2); padding: 12px 14px; font-size: 17px; line-height: 1.6; }
 .chat-bubble::before { content: ''; position: absolute; width: 6px; height: 6px; top: 10px; left: -7px; background: var(--line-2); }
 .chat-arrive p { animation: message-in 420ms var(--ease-out); }
-.chat-typing { position: absolute; top: 10px; left: 14px; opacity: 0; font-size: 14px; animation: typing 420ms var(--px-steps); pointer-events: none; }
 .try-robot { color: var(--ink); }
 .try-instruction { font-size: 16px; font-weight: 750; color: var(--ink); margin: 16px 0 10px; }
 .try-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 16px; font-variant-numeric: tabular-nums; background: var(--card); }
@@ -347,7 +346,6 @@ input.styled-switch:checked::before { background: var(--teal); transform: transl
 @keyframes correct-pop { 0% { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes stamp-press { 0%,40% { opacity: 0; transform: scale(1.6) rotate(-14deg); } 76% { opacity: 1; transform: scale(.94) rotate(-6deg); } 100% { transform: scale(1) rotate(-6deg); } }
 @keyframes stamp-impact { 0%,100% { transform: none; } 50% { transform: translateY(2px); } }
-@keyframes typing { 0%,70% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes message-in { 0%,70% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes window-light { 0%,65%,100% { opacity: 1; } 70%,90% { opacity: .15; } }
 @keyframes state-fade { from { opacity: .2; } to { opacity: 1; } }
