@@ -75,7 +75,7 @@
         <div class="eyebrow">STEP 01・理解需求</div><h2 class="mt8" style="font-size:20px">先別急著做，確認你真的懂要做什麼。</h2>
         <label class="field mt16"><span>用你自己的話重述這個任務<em>1–3 句</em></span><textarea class="textarea" data-bind="understanding.restate" placeholder="例：要在什麼限制下，交出什麼，給誰看…">${esc(a.understanding.restate)}</textarea></label>
         <label class="field mt16"><span>開工前，你想向主管確認哪些問題？<em>一行一題</em></span><textarea class="textarea" data-bind="understanding.questions" ${a.clarified ? 'readonly' : ''} placeholder="例：預算有沒有彈性？報告要給誰看？">${esc(a.understanding.questions)}</textarea></label>
-        ${a.clarified ? `<div class="callout ok mt12">${icon('check')}<div>主管已回覆你的問題，請到左側「信件」查看。</div></div>` : `<button class="btn btn-ghost mt12" data-clarify>${icon('send')}送出確認問題給主管</button>`}
+        ${a.clarified ? `<div class="callout ok mt12">${icon('check')}<div>主管已回覆你的問題，請到資料區的「信件」查看。</div></div>` : `<button class="btn btn-ghost mt12" data-clarify>${icon('send')}送出確認問題給主管</button>`}
         <div class="ws-actions"><span></span><button class="btn btn-primary" data-next>下一步：拆解計畫 ${icon('arrowRight')}</button></div></div>`;
       if (s === 2) return `<div class="card card-pad">
         <div class="eyebrow">STEP 02・拆解計畫</div><h2 class="mt8" style="font-size:20px">把任務拆成可以檢查的步驟。</h2>
@@ -84,8 +84,8 @@
         ${a.plan.length < 8 ? `<button class="btn btn-text mt8" data-add>${icon('plus')}新增步驟</button>` : ''}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：開始實作 ${icon('arrowRight')}</button></div></div>`;
       if (s === 3) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 03・實作產出</div><h2 class="mt8" style="font-size:20px">開始做。資料、文件、AI 都在左邊。</h2>
-        ${a.changeAt ? `<div class="callout bad mt12">${px.sprite('bolt', { size: 18 })}<div><b>需求已變更：</b>${esc(t.change.subject.replace(/【.*?】/, ''))}。請把成果調整成新版本。</div></div>` : `<div class="callout info mt12">${icon('info')}<div>發現可疑的資料或 AI 回答，記得在左側標記 ⚑。</div></div>`}
+        <div class="eyebrow">STEP 03・實作產出</div><h2 class="mt8" style="font-size:20px">查過資料，再完成你的成果。</h2>
+        ${a.changeAt ? `<div class="callout bad mt12">${px.sprite('bolt', { size: 18 })}<div><b>需求已變更：</b>${esc(t.change.subject.replace(/【.*?】/, ''))}。請把成果調整成新版本。</div></div>` : `<div class="callout info mt12">${icon('info')}<div>發現可疑的資料或 AI 回答，記得在資料區標記 ⚑。</div></div>`}
         ${t.deliverables.map(d => `<label class="field deliv mt16"><span>${esc(d.label)}</span><textarea class="textarea" style="min-height:130px" data-ans="${d.id}" placeholder="${esc(d.hint)}">${esc(a.answers[d.id] || '')}</textarea><div class="hint"><span>${esc(d.hint)}</span><span data-cnt="${d.id}">${cnt(d)}</span></div></label>`).join('')}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：驗證修正 ${icon('arrowRight')}</button></div></div>`;
       if (s === 4) {
@@ -154,7 +154,7 @@
         timers.push(setTimeout(() => triggerChange(root), CHANGE_AFTER_MS));
       }
     }
-    function goStep(root, n) { a.step = n; APP.store.log(a, 'step', '進入步驟：' + STEPS[n - 1]); save(); rerender(root); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function goStep(root, n) { a.step = n; APP.store.log(a, 'step', '進入步驟：' + STEPS[n - 1]); save(); rerender(root); window.scrollTo({ top: 0, behavior: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
 
     function validate() {
       const s = a.step;
@@ -219,7 +219,7 @@
           if (el.name === 'aiu') { a.disclosure.used = el.value; save(); }
         });
       },
-      unmount() { timers.forEach(x => { clearTimeout(x); clearInterval(x); }); save(); }
+      unmount() { clearTimeout(saveT); timers.forEach(x => { clearTimeout(x); clearInterval(x); }); save(); }
     };
   };
 

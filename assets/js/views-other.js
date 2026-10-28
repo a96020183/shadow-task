@@ -88,7 +88,7 @@
             <div class="grid g2 mt16"><div><b style="font-size:13px">成果摘要</b><p class="muted mt8" style="font-size:13.5px">${nl(e.excerpt.slice(0, 220))}${e.excerpt.length > 220 ? '…' : ''}</p></div>
             ${e.def ? `<div><b style="font-size:13px">答辯節錄</b><p class="faint mt8" style="font-size:12.5px">Q：${esc(e.q)}</p><p class="muted mt8" style="font-size:13.5px">A：${esc(e.def)}</p></div>` : '<div></div>'}</div></div></details>`).join('')}
       </div>
-      <div class="verify-box mt24"><div class="qr">${APP.ui.fingerprint(p.name + p.entries.map(e => e.vid).join(''))}</div><div><b>如何驗證這份工單履歷</b><p class="muted" style="font-size:13px">每張工單都有驗證碼，企業可在平台查核成果全文、作答過程紀錄與答辯內容（需本人同意）。工單履歷由市府平台核發，學經歷以外的能力證據。</p></div></div>`;
+      <div class="verify-box mt24"><div class="qr">${APP.ui.fingerprint(p.name + p.entries.map(e => e.vid).join(''))}</div><div><b>如何驗證這份工單履歷</b><p class="muted" style="font-size:13px">每張工單都有驗證碼，企業可在平台查核成果全文、作答過程紀錄與答辯內容（需本人同意）。本提案規劃由市府平台核發，作為學經歷以外的能力證據。</p></div></div>`;
   }
 
   APP.portfolioMine = () => mine();
@@ -179,14 +179,14 @@
     };
     const ITYPE = { interview: '面試邀約', l2: 'L2 企業挑戰', intern: '實習（L3）' };
     const talent = () => `
-      <div class="row-between mt24">
-        <div class="filters"><span class="label">等級</span>${[['all', '全部'], ['A', 'A 以上'], ['S', '有 S 級']].map(([k, n]) => `<button class="chip ${minG === k ? 'on' : ''}" data-g="${k}">${n}</button>`).join('')}</div>
-        <div class="filters"><span class="label">最看重</span>${APP.DIMS.map((d, i) => `<button class="chip ${sortBy === i ? 'on' : ''}" data-sort="${i}">${d.n}</button>`).join('')}</div>
+      <div class="talent-filters mt24">
+        <label class="field"><span>工單等級</span><select class="select" data-grade-filter>${[['all','全部等級'],['A','A 級以上'],['S','有 S 級']].map(([k,n]) => `<option value="${k}" ${minG === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label class="field"><span>排序依據</span><select class="select" data-sort-filter><option value="-1">預設順序</option>${APP.DIMS.map((d,i) => `<option value="${i}" ${sortBy === i ? 'selected' : ''}>${d.n}</option>`).join('')}</select></label>
       </div>
       <div class="grid g3 mt24">${pool().map(c => `<div class="card cand">
-        <div class="cand-top"><span style="background:var(--night);width:46px;height:46px;display:grid;place-items:center">${px.avatar(c.alias, 34)}</span><div><b>${esc(c.alias)}</b><span>${esc(c.who)}・${esc(c.focus)}</span></div><div style="margin-left:auto;display:flex;gap:4px">${c.grades.slice(0, 3).map(g => `<span class="grade grade-${g} sm">${g}</span>`).join('')}</div></div>
+        <div class="cand-top"><span class="professional-avatar">${icon('user')}</span><div><b>${esc(c.alias)}</b><span>${esc(c.who)}・${esc(c.focus)}</span></div><div style="margin-left:auto;display:flex;gap:4px">${c.grades.slice(0, 3).map(g => `<span class="grade grade-${g} sm">${g}</span>`).join('')}</div></div>
         <div class="mini-dims">${APP.DIMS.map((d, i) => `<div style="${sortBy === i ? 'background:var(--accent-soft)' : ''}"><b>${c.dims[i]}</b><span>${d.n}</span></div>`).join('')}</div>
-        <div class="row" style="gap:6px">${c.badges.map(b => `<span class="tag">${px.sprite(APP.px.BADGE_SPRITE[b], { size: 14 })}${APP.BADGES[b].n}</span>`).join('')}</div>
+        <p class="candidate-behavior">${c.badges.map(b => APP.BADGES[b].n).join('・')}</p>
         <div class="row" style="margin-top:auto"><a class="btn btn-ghost btn-sm" href="${c.me ? '#/portfolio' : '#/p/' + c.id}">${icon('eye')}查看工單履歷</a>${c.me ? '' : `<button class="btn btn-primary btn-sm" data-invite="${c.id}">${icon('send')}邀請</button>`}</div>
       </div>`).join('')}</div>`;
     const post = () => `
@@ -204,7 +204,7 @@
         </form>
         <div class="stack" style="--gap:20px">
           <div class="card card-pad"><h3 style="font-size:17px">為什麼企業願意出題</h3>
-            <div class="mt12">${[['一次出題，長期篩人', '同一張工單可以篩上百位候選人，比一場場面試省力。'], ['比面試準', '工作樣本搭配結構化追問，是預測工作表現最有效的方法之一；「年資」的預測效度只有 .07（Sackett et al., 2022）。'], ['零訓練成本試用', '新人在進公司前，就已經做過你們的業務。'], ['雇主品牌', '出題企業在公會大廳曝光，觸及正在找方向的青年。']].map(r => `<div class="rule"><div class="ri">${icon('check')}</div><div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div></div>
+            <div class="mt12">${[['一次出題，長期篩人', '同一張工單可以篩上百位候選人，比一場場面試省力。'], ['比面試準', '工作樣本搭配結構化追問，是預測工作表現最有效的方法之一；「年資」的預測效度只有 .07（Sackett et al., 2022）。'], ['先看工作樣本', '用已結案或模擬工單看能力，成果不得商用。'], ['雇主品牌', '出題企業在公會大廳曝光，觸及正在找方向的青年。']].map(r => `<div class="rule"><div class="ri">${icon('check')}</div><div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div></div>
           <div class="card card-pad"><h3 style="font-size:17px">已送出的工單</h3>
             <div class="mt12">${(s.postedTasks || []).length ? s.postedTasks.map(p => `<div class="rule"><div class="ri">${icon('doc')}</div><div style="flex:1"><b>${esc(p.title)}</b><span>${esc(p.role)}・${p.hours} 小時・${fmtDate(p.at)}</span></div><span class="tag tag-warn" style="align-self:center">${esc(p.status)}</span></div>`).join('') : '<p class="faint" style="font-size:13px">還沒有送出的工單</p>'}</div></div>
         </div>
@@ -214,15 +214,16 @@
     return {
       title: '企業專區',
       html: `<div class="wrap page">
-        <div class="eyebrow">企業專區</div>
-        <h1 class="section-title mt8">不用賭。先看他做過什麼，再決定要不要面試。</h1>
-        <div class="grid g3 mt24">
+
+        <h1 class="section-title mt8">依工作成果找人才</h1><p class="section-sub">先看怎麼做事，再決定要不要面試。</p>
+        <div class="row-between mt48"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div><span class="tag">${icon('eyeOff')}盲審模式：預設隱藏學校與姓名</span></div>
+        <div data-body>${body()}</div>
+        <details class="proposal-evidence mt24"><summary>企業招募現況與資料出處</summary>        <div class="grid g3 mt24">
           <div class="card kpi"><div class="label">補一個職缺平均花費</div><div class="value">60.3 天</div><div class="delta muted" style="font-weight:400">104 人資調查，2025</div></div>
           <div class="card kpi"><div class="label">新人 6 個月留任率</div><div class="value">65.4%</div><div class="delta muted" style="font-weight:400">104 人資調查，2025</div></div>
           <div class="card kpi"><div class="label">企業：面試說的和實際做的有落差</div><div class="value">34.4%</div><div class="delta muted" style="font-weight:400">yes123，2025</div></div>
         </div>
-        <div class="row-between mt48"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div><span class="tag">${icon('eyeOff')}盲審模式：預設隱藏學校與姓名</span></div>
-        <div data-body>${body()}</div>
+</details>
       </div>`,
       mount(root) {
         const re = () => { $('[data-body]', root).innerHTML = body(); $$('[data-tab]', root).forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); };
@@ -232,6 +233,10 @@
           if (el.dataset.g) { minG = el.dataset.g; re(); }
           if (el.dataset.sort) { sortBy = sortBy === +el.dataset.sort ? -1 : +el.dataset.sort; re(); }
           if (el.dataset.invite) inviteModal(el.dataset.invite, () => { const b = $('[data-tab="inv"]', root); if (b) b.textContent = `我的邀約（${(s.invites || []).length}）`; if (tab === 'inv') re(); });
+        });
+        root.addEventListener('change', e => {
+          if (e.target.matches('[data-grade-filter]')) { minG = e.target.value; re(); $('[data-grade-filter]', root).focus(); }
+          if (e.target.matches('[data-sort-filter]')) { sortBy = +e.target.value; re(); $('[data-sort-filter]', root).focus(); }
         });
         root.addEventListener('submit', e => {
           e.preventDefault();
@@ -399,7 +404,7 @@
       title: '職人答辯官',
       html: `<div class="wrap page">
         <div class="grid g2" style="align-items:center;gap:32px">
-          <div><div class="eyebrow">職人答辯官・跨世代</div><h1 class="section-title mt8">你的經驗，是新人最需要的那面鏡子。</h1>
+          <div><h1 class="section-title mt8">職人答辯與複核</h1>
             <p class="section-sub">招募資深與退休職人擔任答辯官：用 15 分鐘視訊追問青年的決策，再複核 AI 初評的分數。每場酬勞 NT$500（規劃），時間自己排。</p></div>
           <div class="grid g3" style="gap:12px">
             <div class="card kpi"><div class="label">每場時間</div><div class="value">30 分</div><div class="delta muted" style="font-weight:400">答辯 15＋複核 15</div></div>
@@ -451,7 +456,7 @@
             <div class="op-qr">${APP.ui.qrSVG(APP.ui.verifyURL(vid))}<span>掃描查驗</span></div></div>
           <div class="op-dims">${APP.DIMS.map((d, i) => `<div><span>${d.n}</span><div class="track"><div class="fill" style="width:${dims[i]}%"></div></div><b>${dims[i]}</b></div>`).join('')}</div>
           <div class="op-list">${list.map(e => `<div class="op-item"><span class="grade grade-${e.grade} sm">${e.grade}</span><div><b>${esc(e.t.title)}</b><div class="faint" style="font-size:12px">${esc(e.t.org)}・${fmtDate(e.at)}・超越約 ${APP.pctOf(e.total)}% 完成者</div><div class="op-beh">${(e.beh || []).map(x => '✓ ' + esc(x)).join('　')}</div></div><span class="mono faint" style="font-size:11px">${e.vid}</span></div>`).join('')}</div>
-          <p class="faint" style="font-size:11.5px;margin-top:14px">每張工單皆經 AI 初評與職人答辯驗證。企業可掃描 QR code 或輸入驗證碼查驗；成果全文需本人同意後調閱。本頁為競賽提案原型示範，非市府正式文件。</p>
+          <p class="faint" style="font-size:11.5px;margin-top:14px">正式版規劃經 AI 初評與職人答辯驗證。企業可掃描 QR code 或輸入驗證碼查驗；成果全文需本人同意後調閱。本頁為競賽提案原型示範，非市府正式文件。</p>
         </div></div>`,
       mount(root) { root.addEventListener('click', e => { if (e.target.closest('[data-print]')) window.print(); }); }
     };
@@ -470,7 +475,7 @@
     return {
       title: '工單履歷查驗',
       html: `<div class="wrap wrap-narrow page"><div class="card card-pad">
-        <div class="eyebrow">工單履歷查驗</div>
+        <h1 class="section-title">工單履歷查驗</h1><p class="muted mt8">提案原型・示範紀錄</p>
         ${hit ? `<div class="row mt16" style="gap:20px"><span class="stamp stamp-in">有效<b>VALID</b></span><div><h2 style="font-size:22px">${esc(hit.t.title)}</h2><div class="muted">${esc(hit.t.org)}・${fmtDate(hit.at)}・等級 ${hit.grade}</div></div></div>
           <div class="row mt16" style="gap:6px">${(hit.beh || []).map(x => `<span class="tag tag-ok">${icon('check')}${esc(x)}</span>`).join('')}</div>
           <dl class="kv mt24" style="max-width:420px"><dt>驗證碼</dt><dd class="mono">${esc(vid)}</dd><dt>持有人</dt><dd>${esc(who)}（盲審）</dd><dt>驗證方式</dt><dd>AI 初評＋職人答辯</dd></dl>

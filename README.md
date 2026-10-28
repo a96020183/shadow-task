@@ -10,7 +10,9 @@
 - **最快**：直接雙擊 `index.html`（不需安裝、不需伺服器）。
 - **或用本機伺服器**：在本資料夾執行 `python -m http.server 8000`，開 <http://localhost:8000>。
 
-首次開啟會自動載入示範帳號「小安」（2 張已完成工單、戰隊、邀請紀錄）。
+首頁主按鈕可直接進入 `#/try` 的 60 秒體驗，不用註冊或輸入資料。體驗只保留在分頁記憶體，不會改寫帳號；重新整理後清除。
+
+首次開啟會在記憶體載入示範帳號「小安」（2 張已完成工單、戰隊、邀請紀錄），操作完整平台後才依原功能存檔。
 想從頭體驗：頁尾「重設為新帳號」→ 建立角色（可試學校信箱驗證，驗證碼會直接顯示）→ 接「物流客訴分類」工單。
 
 作答只存在瀏覽器的 localStorage，不會上傳任何伺服器。
@@ -30,15 +32,19 @@
 index.html
 assets/css/app.css      主要樣式（含深色模式、手機版）
 assets/css/pixel.css    公會大廳的像素風樣式
+assets/css/finals.css   決賽首頁、短體驗與手機介面調整
 assets/js/data.js       工單內容、示範人才、儀表板示範數據
 assets/js/store.js      localStorage 存取
 assets/js/ui.js         圖示、modal、toast、圖表
 assets/js/pixel.js      像素 sprite、臺北天際線
 assets/js/scoring.js    五力評分規則（透明規則；正式版為 AI 初評＋職人複核）
 assets/js/views-*.js    各頁面
+assets/js/views-try.js  獨立短體驗、體驗履歷與本分頁查驗
 assets/js/social.js     戰隊、邀請、校際榜、示範帳號
 assets/js/app.js        路由、導覽、建立角色
 assets/fonts/           Cubic 11 像素字型（SIL OFL 1.1，見 Cubic_11-OFL.txt）
 ```
 
 純靜態網站，沒有 build 步驟，可直接部署到 GitHub Pages（Settings → Pages → 從 main 分支根目錄部署）。
+
+決賽版變更及驗收範圍見 `決賽版改動說明.md`。本機回歸測試為 `python tests/finals_audit.py`，需要已安裝的 Python Playwright 與 Chromium；網站本身不依賴這些工具。測試截圖與報告輸出至 `tests/audit-output/`，不納入版本控制。

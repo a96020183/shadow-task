@@ -83,9 +83,9 @@
   }
 
   APP.demo = {
-    load() {
+    load(persist = true) {
       const now = Date.now();
-      APP.store.reset();
+      APP.store.reset(persist);
       const s = APP.store.get();
       Object.assign(s.user, { name: '小安', who: '應屆畢業', school: '臺北示範大學', schoolVerified: true, email: 'an@demo.edu.tw', visible: true, blind: true, createdAt: now - 9 * DAY });
       s.onboarded = true; s.demo = true;
@@ -132,7 +132,7 @@
       s.coupons = 2;
       s.invites = [{ cand: 'y0388', type: 'interview', msg: '想邀請您來聊聊營運助理職缺。', at: now - DAY }];
       s.postedTasks = [{ title: '電商退貨原因分析與改善', role: '營運分析', hours: 3, at: now - 2 * DAY, status: '去識別化審查中' }];
-      APP.store.save();
+      if (persist) APP.store.save();
     },
     fresh() { APP.store.reset(); const s = APP.store.get(); s.demo = false; s.user.createdAt = Date.now(); APP.store.save(); }
   };

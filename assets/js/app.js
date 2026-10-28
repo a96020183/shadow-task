@@ -6,6 +6,7 @@
 
   const ROUTES = [
     [/^\/$/, () => V.landing()],
+    [/^\/try$/, () => V.try()],
     [/^\/tasks$/, () => V.tasks()],
     [/^\/task\/([\w-]+)$/, m => V.task(m[1])],
     [/^\/work\/([\w-]+)$/, m => V.work(m[1])],
@@ -19,8 +20,8 @@
     [/^\/join\/([\w-]+)$/, m => V.join(m[1])],
     [/^\/learn$/, () => V.learn()],
     [/^\/mentor$/, () => V.mentor()],
-    [/^\/onepage$/, () => V.onepage()],
-    [/^\/verify\/([\w-]+)$/, m => V.verify(m[1])],
+    [/^\/onepage(?:\?try=1)?$/, m => m[0].includes("?") ? V.tryOnepage() : V.onepage()],
+    [/^\/verify\/([\w-]+)$/, m => APP.tryVerify(m[1]) || V.verify(m[1])],
     [/^\/about$/, () => V.about()]
   ];
   const NAV = [
@@ -38,18 +39,19 @@
   function shell() {
     document.body.innerHTML = `
       <a class="sr-only skip" href="#/" data-skip>跳到主要內容</a>
-      <div class="proto-bar"><b>競賽提案原型</b>・2026 臺北市政府青年局公共政策創意提案競賽｜非市府官方服務，企業、局處與數據皆為虛構示範</div>
+      <details class="proto-bar"><summary>競賽提案原型・非市府官方服務 <span>說明</span></summary><p>這不是臺北市政府的官方服務。企業、局處、人物與數據皆為虛構或示範，統計數據另註出處。作答只存在這台裝置，不會上傳。</p></details>
       <header class="nav"><div class="wrap nav-in">
         <a class="brand" href="#/" aria-label="影子工單首頁">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
-        <nav class="nav-links" data-links aria-label="主要導覽">${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}</nav>
+        <nav id="main-links" class="nav-links" data-links aria-label="主要導覽">${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}</nav>
         <div class="nav-right">
           <span data-demo></span>
           <button class="icon-btn" data-theme-toggle aria-label="切換深淺色">${icon('moon')}</button>
           <a class="user-pill" href="#/portfolio" data-pill></a>
-          <button class="icon-btn menu-btn" data-menu aria-label="選單">${icon('menu')}</button>
+          <button class="icon-btn menu-btn" data-menu aria-label="開啟選單" aria-expanded="false" aria-controls="main-links">${icon('menu')}</button>
         </div>
       </div></header>
       <main id="view" tabindex="-1"></main>
+      <nav class="mobile-nav" aria-label="手機主要導覽">${[['#/', '首頁', 'ticket'], ['#/tasks', '青年', 'user'], ['#/company', '企業', 'briefcase'], ['#/gov', '市府', 'chart'], ['#/mentor', '答辯官', 'chat']].map(([h,n,i]) => `<a href="${h}">${icon(i)}<span>${n}</span></a>`).join('')}</nav>
       <footer class="foot"><div class="wrap foot-grid">
         <div style="max-width:560px"><a class="brand" href="#/">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
           <p class="mt12">本網站為「2026 臺北市政府青年局公共政策創意提案競賽」的提案原型，<b>不是臺北市政府的官方服務</b>。網站中的企業、局處名稱、人物與數據皆為虛構或示範，統計數據另註明出處。你的作答只存在這台裝置的瀏覽器，不會上傳到任何伺服器。</p>
@@ -59,8 +61,8 @@
       </div></footer>`;
     document.addEventListener('click', e => {
       if (e.target.closest('[data-theme-toggle]')) { APP.theme.set(APP.theme.effective() === 'dark' ? 'light' : 'dark'); paintChrome(); }
-      if (e.target.closest('[data-menu]')) $('[data-links]').classList.toggle('open');
-      if (e.target.closest('[data-links] a')) $('[data-links]').classList.remove('open');
+      if (e.target.closest('[data-menu]')) { const open = $('[data-links]').classList.toggle('open'); $('[data-menu]').setAttribute('aria-expanded', String(open)); }
+      if (e.target.closest('a[href^="#/"]')) { $('[data-links]').classList.remove('open'); $('[data-menu]').setAttribute('aria-expanded', 'false'); }
       if (e.target.closest('[data-load-demo]')) { e.preventDefault(); confirmDemo(); }
       if (e.target.closest('[data-reset]')) { e.preventDefault(); confirmReset(); }
       if (e.target.closest('[data-demo-chip]')) demoMenu();
@@ -85,6 +87,11 @@
     const s = APP.store.get();
     const hash = location.hash || '#/';
     $$('[data-links] a').forEach((a, i) => a.classList.toggle('active', NAV[i][2].test(hash)));
+    $$('.mobile-nav a').forEach(a => {
+      const h = a.getAttribute('href');
+      const active = h === '#/' ? /^#\/(?:try)?$/.test(hash) : h === '#/tasks' ? /^#\/(tasks|task|work|defense|result|squad|join|portfolio|onepage|learn)/.test(hash) : hash.startsWith(h);
+      active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+    });
     const lv = level(s.xp);
     $('[data-pill]').innerHTML = s.onboarded
       ? `<span class="avatar" style="background:var(--night);padding:2px">${px.avatar(s.user.name, 24)}</span><span class="who">${esc(s.user.name)} <span class="lv">LV.${lv.lv}</span></span>`
@@ -95,6 +102,8 @@
 
   function render() {
     const path = (location.hash || '#/').slice(1) || '/';
+    document.body.dataset.route = (path.split('/')[1] || 'home').split('?')[0];
+    document.body.classList.toggle('professional', /^(company|gov|mentor|verify|onepage|p)$/.test(document.body.dataset.route));
     let view = null;
     try {
       for (const [re, fn] of ROUTES) { const m = path.match(re); if (m) { view = fn(m); break; } }
@@ -182,13 +191,17 @@
   function boot() {
     let first = false;
     try { first = localStorage.getItem('shadowtask.v1') === null; } catch (e) { first = true; }
-    if (first) APP.demo.load();
+    if (first) APP.demo.load(false);
     shell();
     window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { const l = $('[data-links]'); if (l && l.classList.contains('open')) { l.classList.remove('open'); const m = $('[data-menu]'); if (m) m.focus(); } }
+      if (e.key === 'Escape') { const l = $('[data-links]'); if (l && l.classList.contains('open')) { l.classList.remove('open'); const m = $('[data-menu]'); if (m) { m.setAttribute('aria-expanded', 'false'); m.focus(); } } }
     });
-    if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintChrome);
+    if (window.matchMedia) {
+      const mq = matchMedia('(prefers-color-scheme: dark)');
+      if (mq.addEventListener) mq.addEventListener('change', paintChrome);
+      else if (mq.addListener) mq.addListener(paintChrome);
+    }
     render();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

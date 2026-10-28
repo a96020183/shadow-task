@@ -227,10 +227,10 @@
     if (typeof qrcode !== 'function') return '';
     const q = qrcode(0, 'M'); q.addData(text); q.make();
     const n = q.getModuleCount(); let d = '';
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) d += `M${x + 2},${y + 2}h1v1h-1z`;
-    return `<svg viewBox="0 0 ${n + 4} ${n + 4}" shape-rendering="crispEdges" role="img" aria-label="驗證 QR code"><rect width="${n + 4}" height="${n + 4}" fill="#fff"/><path d="${d}" fill="#15171c"/></svg>`;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) d += `M${x + 4},${y + 4}h1v1h-1z`;
+    return `<svg viewBox="0 0 ${n + 8} ${n + 8}" shape-rendering="crispEdges" role="img" aria-label="驗證 QR code"><rect width="${n + 8}" height="${n + 8}" fill="#fff"/><path d="${d}" fill="#15171c"/></svg>`;
   }
-  const verifyURL = vid => location.href.split('#')[0] + '#/verify/' + vid;
+  const verifyURL = vid => (location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
 
   APP.ui = { qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
 })();

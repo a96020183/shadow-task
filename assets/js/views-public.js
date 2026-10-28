@@ -29,156 +29,19 @@
   APP.startTask = startTask;
 
   /* ======================================================== 首頁 */
-  V.landing = () => {
-    const featured = APP.TASKS.filter(t => t.status === 'open');
-    return {
-      title: '沒有年資，也有證明',
-      html: `
-      <section class="hero"><div class="wrap hero-grid">
-        <div>
-          <div class="eyebrow">臺北影子工單計畫・公共政策提案原型</div>
-          <h1 class="mt16">沒有年資，<br>也有<span class="hl"><span>證明</span></span>。</h1>
-          <p class="hero-lead">接下市府與企業提供的<b>去機密化歷史工單</b>，自由使用 AI。但<span class="lie">我們故意讓 AI 說謊</span>：抓出錯誤資料、應付中途的需求變更，最後完成答辯。<br>我們不認證你上過什麼課，而是證明你<b>真的能把工作做對</b>。</p>
-          <div class="hero-cta">
-            <a class="px-btn lg" href="#/tasks">${px.sprite('scroll', { size: 22 })}進入公會大廳</a>
-            <a class="btn btn-ghost btn-lg" href="#/company">${icon('briefcase')}我是企業</a>
-          </div>
-          <div class="hero-proof">
-            <div><b>51.8%</b><span>新鮮人最擔心「缺乏相關工作經驗」<br>${H.src('1111 人力銀行，2026')}</span></div>
-            <div><b>34.4%</b><span>企業：新人面試說的和實際表現有落差<br>${H.src('yes123，2025')}</span></div>
-            <div><b>.07</b><span>「年資」預測工作表現的效度<br>${H.src('Sackett et al., 2022')}</span></div>
-          </div>
-        </div>
-        <div class="hero-visual" aria-hidden="true">
-          <div class="peek">${px.avatar('hero-peek', 54)}</div>
-          <div class="ticket hv-card c1">
-            <div class="ticket-top">
-              <div class="row-between"><span class="ticket-id">TPE-G-0142</span>${H.orgTag(APP.TASKS[0])}</div>
-              <h3>青年市集報名數據分析與下季推廣預算建議</h3>
-              <div class="row" style="gap:6px"><span class="tag">資料判讀</span><span class="tag">預算分配</span><span class="tag">一頁式報告</span></div>
-            </div>
-            <div class="ticket-perf"></div>
-            <div class="ticket-foot"><div class="meta"><span>${icon('clock')}3 小時</span><span class="lvl lvl-1">L1</span></div><span>AI 可用・需揭露</span></div>
-          </div>
-          <div class="card card-pad hv-card c2" style="padding:18px">
-            <div class="row-between"><b style="font-size:14px">工作台・進行中</b><span class="timer">${icon('clock')}01:42:18</span></div>
-            <div class="hv-event warn">${px.sprite('bolt', { size: 18 })}<div><b>主管來信：需求變更</b><br>下季預算從 50 萬刪為 35 萬，第 2 場改平日晚上。</div></div>
-            <div class="hv-event bad">${icon('flag')}<div><b>你標記了 AI 的回答</b><br>「KOL 每位到場成本約 NT$210」，實際約 NT$567。</div></div>
-          </div>
-          <div class="card hv-card c3" style="padding:18px 20px">
-            <div class="row" style="gap:12px">${px.avatar('Y-0507', 40)}<div><b>Y-0507・工單履歷</b><div class="faint mono" style="font-size:11.5px">TPE-PW-2026-8F3A1C</div></div><span class="grade grade-S sm" style="margin-left:auto">S</span></div>
-            <div class="mini-dims mt12">${APP.DIMS.map((d, i) => `<div><b>${[82, 90, 96, 80, 74][i]}</b><span>${d.n}</span></div>`).join('')}</div>
-            <div class="hv-stamp"><span class="stamp">已驗證<b>VERIFIED</b></span></div>
-          </div>
-        </div>
-      </div></section>
-
-      <section class="wrap mt64">
-        <div class="eyebrow">問題</div>
-        <h2 class="section-title mt8">企業不是不要新人，是沒辦法低成本確認新人能不能做事。</h2>
-        <p class="section-sub">所以只好用「年資」擋人。新人陷入沒經驗、沒工作、更沒經驗的循環，而 AI 正在把最適合新人練手的入門工作自動化。</p>
-        <div class="card mt24"><div class="loop">
-          <div class="loop-node"><b>沒有經驗</b><span class="muted">履歷上只有學校與成績</span></div>
-          <div class="loop-node" style="border-left:1px dashed var(--line);border-right:1px dashed var(--line)"><b>找不到工作</b><span class="muted">職缺要求「相關經驗 1–3 年」</span></div>
-          <div class="loop-node"><b>更沒有經驗</b><span class="muted">入門工作又被 AI 吃掉</span></div>
-        </div></div>
-        <div class="grid g3 mt24">
-          <div class="card kpi"><div class="label">22–25 歲在高 AI 暴露職業的就業（相對同儕）</div><div class="value">−13% → −19%</div><div class="delta muted" style="font-weight:400">Stanford Digital Economy Lab，2025 初版 → 2026 修訂</div></div>
-          <div class="card kpi"><div class="label">大學程度失業率：各教育程度中最高</div><div class="value">4.56%</div><div class="delta muted" style="font-weight:400">主計總處，2026 年 8 月（全體 3.41%）</div></div>
-          <div class="card kpi"><div class="label">臺北市 25–29 歲失業率（全國 5.77%）</div><div class="value">7.8%</div><div class="delta muted" style="font-weight:400">主計總處，2025 年；2024 年起回升</div></div>
-        </div>
+  V.landing = () => ({
+    title: '沒有年資，也有證明',
+    html: `<div class="final-home wrap">
+      <section class="home-intro">
+        <div class="home-copy"><h1 class="px">沒有年資，<br>也有證明。</h1><p class="home-lead">做一張模擬工單，<br>讓企業看見你怎麼把事做對。</p></div>
+        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><span>今天的委託</span><h2>青年市集報名數據</h2><p>AI 算了 7 人。<br>你能看出哪裡不對嗎？</p><div class="home-ticket-bottom">${px.avatar('fair-supervisor', 32)}<span>抓錯 → 應變 → 拿到證明</span></div></div></div>
+        <div class="home-action"><a class="btn btn-accent" href="#/try">開始 60 秒體驗 ${icon('arrowRight')}</a><p>不用註冊，不用輸入資料。</p></div>
       </section>
-
-      <section class="wrap mt96">
-        <div class="eyebrow">同一個人，兩種證明</div>
-        <h2 class="section-title mt8">HR 只花 10 秒看履歷。這 10 秒，決定新人有沒有機會。</h2>
-        <div class="two-cv mt32">
-          <div class="cv old"><div class="cv-h">傳統履歷</div>
-            <dl><dt>學歷</dt><dd>私立科技大學・企業管理系</dd><dt>經歷</dt><dd>無相關工作經驗</dd><dt>技能</dt><dd>Excel、PowerPoint、ChatGPT</dd><dt>證照</dt><dd>AI 應用證照</dd><dt>自傳</dt><dd>「我學習能力強、抗壓性高……」</dd></dl>
-            <div class="cv-v bad">${icon('x')}HR：沒經驗，先跳過</div></div>
-          <div class="cv-mid">${icon('arrowRight')}<span>同一個人</span></div>
-          <div class="cv new"><div class="cv-h">工單履歷<span class="tag" style="margin-left:8px">盲審 Y-0412</span></div>
-            <dl><dt>已驗證</dt><dd>3 張：咖啡品牌回購診斷 <b>S</b>・市集預算建議 <b>A</b>・物流客訴 SOP <b>A</b></dd><dt>抓錯</dt><dd>埋設錯誤 8/9，含 2 次 AI 的錯誤數字</dd><dt>應變</dt><dd>3 次需求變更皆完整調整</dd><dt>答辯</dt><dd>「我會給老闆看拆分表：舊會員只掉 4 個百分點，問題在新客留不住。」</dd></dl>
-            <div class="cv-v ok">${icon('check')}HR：這個人可以約面試</div></div>
-        </div>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="eyebrow">怎麼運作</div>
-        <h2 class="section-title mt8">像真的上班一樣，只是這次犯錯不用付代價。</h2>
-        <div class="steps mt32">
-          ${[
-            ['scroll', '接單', '從公會大廳挑一張去機密化的歷史工單，2–4 小時可完成。'],
-            ['bubble', '理解與拆解', '先用自己的話重述需求、向主管提問，再把任務拆成步驟。'],
-            ['gem', '實作（可用 AI）', '自由使用 AI，但要揭露怎麼用、怎麼驗證。'],
-            ['bolt', '突發事件', '資料裡埋了錯、AI 會出錯、主管中途改需求。', 1],
-            ['shield', '答辯 → 工單履歷', '由職人答辯官追問你的決定，通過後核發可驗證的工單履歷。']
-          ].map((s, i) => `<div class="card step-card ${s[3] ? 'hot' : ''}"><div class="step-ico">${px.sprite(s[0], { size: 22 })}</div><div class="num mt12">STEP 0${i + 1}</div><h4>${s[1]}</h4><p>${s[2]}</p></div>`).join('')}
-        </div>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="eyebrow">評的是什麼</div>
-        <h2 class="section-title mt8">不考會不會用 AI，考的是判斷力。</h2>
-        <p class="section-sub">AI 工具半年換一次，這五種能力不會過期。每張工單都用同一把尺，企業看得懂、青年也知道下一步要練什麼。</p>
-        <div class="dims mt32">${APP.DIMS.map((d, i) => `<div class="dim"><div class="k">0${i + 1}</div><h4>${d.n}</h4><p>${d.d}</p></div>`).join('')}</div>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="eyebrow">一個平台，三種面孔</div>
-        <h2 class="section-title mt8">對青年像遊戲，對企業像履歷，對市府像儀表板。</h2>
-        <div class="dual mt32">
-          <a class="px-card face youth" href="#/tasks"><div class="face-k">青年</div><h4>公會大廳</h4><p>接委託、升等、組戰隊。降低開始的門檻，讓不會主動參加 hackathon 的人也願意試一次。</p>
-            <div class="preview">${px.avatar('me', 48)}<div><div class="px px-22">Lv.2 熟手接案者</div>${px.xpBar(.6, 14)}</div></div></a>
-          <a class="card face" href="#/company"><div class="face-k">企業</div><h4>可驗證的工單履歷</h4><p>不用賭。先看他做過什麼、怎麼做決定、怎麼抓 AI 的錯，再決定要不要面試。</p>
-            <div class="preview"><span class="grade grade-A">A</span><div><b>Y-0388・轉職（餐飲 → 營運）</b><div class="faint" style="font-size:12.5px">盲審模式：學校已隱藏</div></div></div></a>
-          <a class="card face" href="#/gov"><div class="face-k">市府</div><h4>成果型儀表板</h4><p>追蹤的不是「辦了幾場、來了幾人」，而是面試率、錄取率、六個月留任率。</p>
-            <div class="preview">${icon('chart')}<div><b>面試邀約率 15.5%</b><div class="faint" style="font-size:12.5px">完成者中（試辦示範數據）</div></div></div></a>
-        </div>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="eyebrow">差在哪裡</div>
-        <h2 class="section-title mt8">不是又一門課，也不是又一張證書。</h2>
-        <div class="card mt24 table-scroll"><table class="compare">
-          <thead><tr><th></th><th>AI 課程／證照</th><th>傳統實習</th><th>國外虛擬工作模擬<br><span class="faint" style="font-weight:400">如 Forage</span></th><th class="us">影子工單</th></tr></thead>
-          <tbody>
-          ${[
-            ['企業看得到實際成果', 0, 1, 0, 1],
-            ['評判斷力，不只看完成', 0, 2, 0, 1],
-            ['錯誤注入與需求變更', 0, 2, 0, 1],
-            ['答辯，防止代做', 0, 0, 0, 1],
-            ['企業不用先付訓練成本', 1, 0, 1, 1],
-            ['常態開放、可規模化', 1, 0, 1, 1],
-            ['公部門背書、接上補助', 2, 2, 0, 1]
-          ].map(r => `<tr><td><b>${r[0]}</b></td>${r.slice(1).map((v, i) => `<td class="${i === 3 ? 'us' : ''}">${v === 1 ? `<span class="yes">${icon('check')}</span>` : v === 2 ? '<span class="meh">部分</span>' : `<span class="no">${icon('x')}</span>`}</td>`).join('')}</tr>`).join('')}
-          </tbody></table></div>
-        <p class="faint mt12" style="font-size:12.5px">Forage 學生端免費、企業端付費，但「企業看不到學生提交的成果」（University of South Florida 職涯中心說明）。</p>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="grid g2" style="align-items:center">
-          <div>
-            <div class="eyebrow">順便解決另一個問題</div>
-            <h2 class="section-title mt8">AI 課程那麼多，哪一門真的有用？</h2>
-            <p class="section-sub">想學的人很難分辨課程好壞。影子工單是企業和青年共用的同一把尺，也能反過來檢驗課程：上過哪門課的人，工單真的做得比較好？</p>
-            <a class="btn btn-primary mt24" href="#/learn">${icon('chart')}看學習資源成效榜</a>
-          </div>
-          <div class="card">${APP.LEARN.slice(0, 2).concat(APP.LEARN.slice(-2, -1)).map(l => `<div class="learn-row" style="grid-template-columns:1fr 160px"><div><b>${esc(l.n)}</b><div class="faint" style="font-size:12px">${l.price ? 'NT$' + l.price.toLocaleString() : '免費'}・${l.users.toLocaleString()} 人用過</div></div><div class="meter"><div class="tr"><div class="fi" style="width:${l.aRate * 2}%"></div></div><b>${l.aRate}%</b></div></div>`).join('')}
-            <div class="learn-row faint" style="font-size:12px;grid-template-columns:1fr">使用者完成工單達 A 級以上的比例（示範數據，課程名稱為虛構）</div></div>
-        </div>
-      </section>
-
-      <section class="wrap mt96">
-        <div class="band">
-          <div class="grid g2" style="align-items:center;gap:32px">
-            <div><h2>AI 工具半年換一次，<br>判斷力可以用一輩子。</h2><p class="muted mt16">先接一張 2 小時的工單試試看。你的成果只存在這台裝置的瀏覽器，不會上傳。</p></div>
-            <div class="row" style="justify-content:flex-end"><a class="px-btn lg" href="#/task/co-logistics-cs">${px.sprite('sword', { size: 20 })}接第一張工單</a><a class="btn btn-ghost btn-lg" href="#/about">看完整計畫</a></div>
-          </div>
-        </div>
-      </section>`
-    };
-  };
+      <section class="home-evidence"><div><h2>把「我會」變成做過的證據。</h2><p>留下怎麼抓錯、怎麼調整、為什麼這樣做。<br>完整工單經職人複核，再交給企業看。</p></div><a class="btn btn-ghost" href="#/verify/TPE-PW-2026-BA58C8">看一張查驗範例 ${icon('arrowRight')}</a></section>
+      <nav class="home-roles" aria-label="依身分進入"><a href="#/tasks"><b>青年</b><span>接工單、組戰隊</span>${icon('arrowRight')}</a><a href="#/company"><b>企業</b><span>看成果、找人才</span>${icon('arrowRight')}</a><a href="#/gov"><b>市府</b><span>追蹤就業成果</span>${icon('arrowRight')}</a><a href="#/mentor"><b>答辯官</b><span>追問決策、複核成果</span>${icon('arrowRight')}</a></nav>
+      <div class="home-team"><span>職影未來提案團隊</span><a href="#/about">計畫說明與資料出處 ${icon('arrowRight')}</a></div>
+    </div>`
+  });
 
   /* ======================================================== 公會大廳 */
   V.tasks = () => {
@@ -221,19 +84,19 @@
       html: `<div class="wrap page">
         <div class="lobby-banner px-edge">${px.skyline()}
           <div class="lobby-in">
-            <div class="lobby-title"><div class="eyebrow">TAIPEI SHADOW-TASK GUILD</div><h1 class="px px-44">公會大廳</h1><p>接下委託，把能力變成企業看得懂的證明。每張委託都來自真實業務，資料已去機密化。</p></div>
+            <div class="lobby-title"><div class="eyebrow">TAIPEI SHADOW-TASK GUILD</div><h1 class="px px-44">公會大廳</h1><p>挑一張模擬工單，留下你做事的證據。</p></div>
             ${me.s.onboarded ? `<a class="player" href="#/portfolio">${px.avatar(me.name, 60)}<div style="flex:1"><div class="pn px">${esc(me.name)}</div><div class="pl">LV.${me.lv.lv} ${esc(me.lv.n)}・${me.xp} XP</div>${px.xpBar(me.lv.pct, 18)}<div class="ps"><span>已驗證 <b>${verified.length}</b></span><span>徽章 <b>${pm.badges.length}</b></span><span>戰隊 <b>${sq ? esc(sq.name) : '—'}</b></span></div></div></a>`
               : `<div class="player">${px.avatar('guest', 60)}<div style="flex:1"><div class="pn px">訪客</div><div class="pl">建立角色後開始累積經驗</div><button class="px-btn sm" data-onboard>建立角色</button></div></div>`}
           </div>
         </div>
 
-        <div class="tiers mt32">
+        <details class="lobby-tiers mt24"><summary>三個階段與解鎖進度</summary><div class="tiers mt16">
           <div class="px-card tier cur">${px.sprite('scroll', { size: 40 })}<div><div class="rk">TIER 01・開放中</div><div class="px px-22">見習委託</div><p>市府與企業的歷史工單，完成即核發工單履歷</p></div></div>
           <div class="px-card tier ${l2open ? '' : 'locked'}">${px.sprite('chest', { size: 40 })}<div><div class="rk">TIER 02・${l2open ? '已解鎖' : `完成 ${l1done}/2 張 L1・平均 A 解鎖`}</div><div class="px px-22">企業挑戰</div><p>企業自己出題篩人，表現好直接邀面試</p></div></div>
           <div class="px-card tier locked">${px.sprite('star', { size: 40 })}<div><div class="rk">TIER 03・企業邀請制</div><div class="px px-22">正式錄用</div><p>面試或實習，接上市府既有的實習補助</p></div></div>
         </div>
 
-        <div class="lobby-grid mt48">
+        </details><div class="lobby-grid mt24">
           <div>
             <div class="row-between">
               <div class="tabs" role="tablist">${[['all', '全部委託'], ['gov', '市府局處'], ['co', '合作企業'], ['done', '已完成']].map(([k, n]) => `<button data-f="${k}" class="${k === 'all' ? 'on' : ''}">${n}</button>`).join('')}</div>
@@ -381,6 +244,15 @@
       <h1 class="section-title mt8">用「做過的工作」取代「待過的年資」。</h1>
       <p class="section-sub">這是 2026 臺北市政府青年局公共政策創意提案競賽的提案原型，用來展示政策的實際運作方式。</p>
 
+      <details class="proposal-evidence mt24"><summary>為什麼需要影子工單？查看提案數據</summary><div class="prose">
+        <ul><li>51.8% 新鮮人最擔心缺乏相關工作經驗。出處：1111 人力銀行，2026。</li>
+        <li>34.4% 企業認為新人面試說的和實際表現有落差。出處：yes123，2025。</li>
+        <li>「年資」預測工作表現的效度為 .07。出處：Sackett et al., 2022。</li>
+        <li>22–25 歲在高 AI 暴露職業的就業，相對同儕為 −13% → −19%。出處：Stanford Digital Economy Lab，2025 初版 → 2026 修訂。</li>
+        <li>大學程度失業率 4.56%，全體為 3.41%。出處：主計總處，2026 年 8 月。</li>
+        <li>臺北市 25–29 歲失業率 7.8%，全國為 5.77%；2024 年起回升。出處：主計總處，2025 年。</li></ul>
+        <p>以上保留原提案引用的數值與出處，與平台中的虛構示範資料分開呈現。</p>
+      </div></details>
       <div class="card card-pad mt32 prose">
         <h4 style="margin-top:0">三階段</h4>
         <div class="ladder mt12">

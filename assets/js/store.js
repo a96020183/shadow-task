@@ -54,14 +54,16 @@
   }
 
   if (typeof addEventListener === 'function') {
-    addEventListener('pagehide', () => { if (mem) save(); });
-    addEventListener('beforeunload', () => { if (mem) save(); });
+    // 補存工作台尚在 350ms debounce 內的輸入。唯讀頁與短體驗不改寫舊存檔。
+    const flushWork = () => { if (mem && /^#\/(work|defense)\//.test(location.hash)) save(); };
+    addEventListener('pagehide', flushWork);
+    addEventListener('beforeunload', flushWork);
   }
 
   APP.store = {
     get: load,
     save,
-    reset() { mem = fresh(); save(); },
+    reset(persist = true) { mem = fresh(); if (persist) save(); },
     attempt(id) { return load().attempts[id] || null; },
     ensureAttempt(id) {
       const s = load();
@@ -95,7 +97,7 @@
       if (v) document.documentElement.setAttribute('data-theme', v); else document.documentElement.removeAttribute('data-theme');
     },
     effective() {
-      const v = this.get();
+      const v = document.documentElement.getAttribute('data-theme') || this.get();
       if (v) return v;
       return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
