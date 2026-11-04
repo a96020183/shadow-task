@@ -13,11 +13,17 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tests' / 'audit-output'
 OUT.mkdir(parents=True, exist_ok=True)
 
-# Every source character supported by the original font must survive subsetting.
+# 像素字只負責英數（unicode-range）；中文標題用 Noto Sans TC Black，必須涵蓋全站用到的字。
 source_chars = set(''.join(p.read_text(encoding='utf8') for p in [ROOT/'index.html', *(ROOT/'assets/js').glob('*.js'), *(ROOT/'assets/css').glob('*.css')]))
-with TTFont(ROOT/'assets/fonts/Cubic_11.woff2') as original, TTFont(ROOT/'assets/fonts/Cubic_11-subset.woff2') as subset:
+with TTFont(ROOT/'assets/fonts/Cubic_11-subset.woff2') as subset:
+    assert set(range(0x20, 0x7f)) <= set(subset.getBestCmap()), 'Pixel subset lost ASCII; rerun tools/subset_font.py'
+with TTFont(ROOT/'.font-cache/NotoSansTC-wght.ttf') if (ROOT/'.font-cache/NotoSansTC-wght.ttf').exists() else TTFont(ROOT/'assets/fonts/NotoSansTC-Black-subset.woff2') as original, TTFont(ROOT/'assets/fonts/NotoSansTC-Black-subset.woff2') as subset:
     expected = {ord(c) for c in source_chars} & set(original.getBestCmap())
-    assert expected <= set(subset.getBestCmap()), 'Font subset is stale; rerun tools/subset_font.py'
+    missing = expected - set(subset.getBestCmap())
+    assert not missing, 'Noto Sans TC subset is stale; rerun tools/subset_font.py: ' + ''.join(map(chr, sorted(missing)))[:40]
+assert not (set('▶►»') & source_chars), 'Use icon("arrowRight") instead of text triangles'
+fonts_kb = sum((ROOT/'assets/fonts'/n).stat().st_size for n in ['Cubic_11-subset.woff2', 'NotoSansTC-Black-subset.woff2']) / 1024
+assert fonts_kb <= 250, f'Home page fonts {fonts_kb:.0f} KB > 250 KB'
 
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_):

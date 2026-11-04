@@ -54,7 +54,17 @@
     compass: '<circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6z"/>'
   };
   function icon(name, cls) {
-    return `<svg class="${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
+    return `<svg class="icon-${name} ${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
+  }
+
+  // 只加入斷行機會，原文字與空白保持不變；工單標題各路由共用。
+  function heading(text) {
+    const phrases = {
+      '青年市集報名數據分析與下季推廣預算建議': ['青年市集', '報名數據分析', '與下季', '推廣預算建議'],
+      '咖啡品牌會員回購率下滑診斷': ['咖啡品牌', '會員回購率', '下滑診斷'],
+      '物流客訴分類與新人客服 SOP 改善': ['物流客訴分類', '與新人客服', ' SOP 改善']
+    };
+    return (phrases[text] || [text]).map(t => `<span class="heading-phrase">${esc(t)}</span>`).join('<wbr>');
   }
 
   const LOGO = `<svg class="brand-mark" viewBox="0 0 40 40" shape-rendering="crispEdges" aria-hidden="true">
@@ -232,5 +242,5 @@
   const verifyURL = (vid, online = false) => (online || location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
 
   const verifyNotice = () => '<div class="verify-notice"><p class="verify-state">示範查驗頁・非市府核發</p><p>正式版將由臺北市政府青年局核發</p></div>';
-  APP.ui = { verifyNotice, qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
+  APP.ui = { heading, verifyNotice, qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
 })();

@@ -34,7 +34,7 @@
     html: `<div class="final-home wrap">
       <section class="home-intro">
         <div class="home-copy"><h1>沒有年資，<br>也有證明。</h1><p class="home-lead">提案規劃：市府出題、職人把關，通過答辯後取得可查驗的工單履歷。</p></div>
-        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><span>工單 #0142</span><h2>青年市集：AI 算了 7 人，對嗎？</h2><p>接下主管的工單，親手核對一次。</p></div></div>
+        <div class="home-preview"><div class="home-sky" aria-hidden="true">${px.skyline()}</div><div class="home-ticket"><span>工單 #0142</span><h2>青年市集：<br>AI 算了 7 人，對嗎？</h2><p>接下主管的工單，親手核對一次。</p></div></div>
         <div class="home-action"><a class="btn btn-accent" href="#/try">開始 60 秒體驗 ${icon('arrowRight')}</a><p>不用註冊，不用輸入資料。</p></div>
       </section>
       <section class="home-evidence"><div><h2>把「我會」變成做過的證據。</h2><p>留下怎麼抓錯、怎麼調整、為什麼這樣做。<br>完整工單經職人複核，再交給企業看。</p></div><a class="btn btn-ghost" href="#/verify/TPE-PW-2026-BA58C8">看一張查驗範例 ${icon('arrowRight')}</a></section>
@@ -57,7 +57,7 @@
       if (t.status === 'locked' && l2open) t = Object.assign({}, t, { status: 'soon', unlocked: true });
       const cls = 'q-l' + t.level;
       const rar = t.level === 1 ? 'L1 見習工單' : t.level === 2 ? 'L2 企業挑戰' : 'L3 正式錄用';
-      const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? '<span class="q-state" style="color:var(--teal)">進行中 ▶</span>' : t.status === 'open' ? '<span class="q-state">接單 ▶</span>' : t.status === 'soon' ? (t.unlocked ? '<span class="tag tag-ok">已解鎖・企業出題中</span>' : '<span class="tag tag-warn">即將開放</span>') : '';
+      const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? `<span class="q-state" style="color:var(--teal)">進行中 ${icon('arrowRight')}</span>` : t.status === 'open' ? `<span class="q-state">接單 ${icon('arrowRight')}</span>` : t.status === 'soon' ? (t.unlocked ? '<span class="tag tag-ok">已解鎖・企業出題中</span>' : '<span class="tag tag-warn">即將開放</span>') : '';
       const inner = `<div class="q-stripe"></div><div class="q-body">
           <div class="q-top"><span class="rar">${rar}</span><span class="ticket-id">${t.code}</span></div>
           <h3>${esc(t.title)}</h3>
@@ -99,7 +99,7 @@
         </details><div class="lobby-grid mt24">
           <div>
             <div class="row-between">
-              <div class="tabs" role="tablist">${[['all', '全部工單'], ['gov', '市府局處'], ['co', '合作企業'], ['done', '已完成']].map(([k, n]) => `<button data-f="${k}" class="${k === 'all' ? 'on' : ''}">${n}</button>`).join('')}</div>
+              <div class="tabs" role="group" aria-label="工單篩選">${[['all', '全部工單'], ['gov', '市府局處'], ['co', '合作企業'], ['done', '已完成']].map(([k, n]) => `<button data-f="${k}" aria-pressed="${k === 'all'}" class="${k === 'all' ? 'on' : ''}">${n}</button>`).join('')}</div>
               <label class="search">${icon('search')}<input class="input" placeholder="搜尋工單、技能、出題單位" aria-label="搜尋"></label>
             </div>
             <div class="quests mt24">${APP.TASKS.map(quest).join('')}</div>
@@ -112,7 +112,7 @@
             </div>
             <a class="px-card px-panel" href="#/squad" style="text-decoration:none"><h4 class="px px-22">${px.sprite('shield', { size: 22 })}${sq ? esc(sq.name) : '組一支戰隊'}</h4>
               <p class="muted mt8" style="font-size:13.5px">${sq ? `本週戰隊目標 ${Math.min(sq.goal, APP.squad.progress())}/${sq.goal} 張工單` : '找 2–4 位朋友一起接單。好友完成第一張工單，你們都拿到「職人 1 對 1 回饋」。'}</p>
-              <span class="px-btn sm mt12" style="align-self:flex-start">${sq ? '查看戰隊' : '建立戰隊'} ▶</span></a>
+              <span class="px-btn sm mt12" style="align-self:flex-start">${sq ? '查看戰隊' : '建立戰隊'} ${icon('arrowRight')}</span></a>
             <div class="px-card px-panel"><h4 class="px px-22">${px.sprite('scroll', { size: 22 })}公會公告</h4>
               <div class="mt8">${APP.NEWS.map(n => `<div class="news"><b>${esc(n.t)}</b><span>${esc(n.m)}</span></div>`).join('')}</div>
             </div>
@@ -133,7 +133,7 @@
         };
         root.addEventListener('click', e => {
           const f = e.target.closest('[data-f]');
-          if (f) { filter = f.dataset.f; APP.ui.$$('[data-f]', root).forEach(b => b.classList.toggle('on', b === f)); apply(); }
+          if (f) { filter = f.dataset.f; APP.ui.$$('[data-f]', root).forEach(b => { b.classList.toggle('on', b === f); b.setAttribute('aria-pressed', String(b === f)); }); apply(); }
           if (e.target.closest('[data-onboard]')) APP.onboard(() => APP.render());
         });
         APP.ui.$('.search input', root).addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); apply(); });
@@ -146,9 +146,9 @@
     const t = H.task(id);
     if (!t || t.status !== 'open') return V.notFound();
     const st = H.stateOf(t);
-    const cta = st.k === 'done' ? `<a class="px-btn lg" style="width:calc(100% - 6px)" href="#/result/${t.id}">查看結果 ▶</a><button class="btn btn-text mt8" style="width:100%" data-redo>${icon('refresh')}重新挑戰（變體工單）</button>`
-      : st.k === 'working' ? `<a class="px-btn lg" style="width:calc(100% - 6px)" href="#/work/${t.id}">繼續工作 ▶</a>`
-      : `<label class="check" style="margin-bottom:12px;font-size:13px"><input type="checkbox" data-practice ${APP.store.completed().length ? '' : 'checked'}><div><b>練習模式</b><div class="faint" style="font-size:12px">不計入工單履歷、不公開，只拿回饋。第一次建議先練習。</div></div></label><button class="px-btn lg" style="width:calc(100% - 6px)" data-start>${px.sprite('sword', { size: 20 })}接下這張工單</button>`;
+    const cta = st.k === 'done' ? `<a class="px-btn lg" style="width:100%" href="#/result/${t.id}">查看結果 ${icon('arrowRight')}</a><button class="btn btn-text mt8" style="width:100%" data-redo>${icon('refresh')}重新挑戰（變體工單）</button>`
+      : st.k === 'working' ? `<a class="px-btn lg" style="width:100%" href="#/work/${t.id}">繼續工作 ${icon('arrowRight')}</a>`
+      : `<label class="check" style="margin-bottom:12px;font-size:13px"><input type="checkbox" data-practice ${APP.store.completed().length ? '' : 'checked'}><div><b>練習模式</b><div class="faint" style="font-size:12px">不計入工單履歷、不公開，只拿回饋。第一次建議先練習。</div></div></label><button class="px-btn lg" style="width:100%" data-start>${px.sprite('sword', { size: 20 })}接下這張工單</button>`;
     return {
       title: t.title,
       html: `<div class="wrap page">
@@ -157,7 +157,7 @@
           <div class="stack" style="--gap:20px">
             <div class="card card-pad">
               <div class="row"><span class="ticket-id">${t.code}</span>${H.orgTag(t)}<span class="lvl lvl-${t.level}">L${t.level}</span></div>
-              <h1 class="mt12" style="font-size:clamp(22px,3vw,30px)">${esc(t.title)}</h1>
+              <h1 class="mt12" style="font-size:clamp(22px,3vw,30px)">${APP.ui.heading(t.title)}</h1>
               <p class="muted mt8">${esc(t.org)}・${esc(t.industry)}・${esc(t.role)}</p>
               <div class="prose mt24">
                 <h4>情境</h4><p>${esc(t.story)}</p>
@@ -239,7 +239,7 @@
     title: '計畫說明',
     html: `<div class="wrap wrap-narrow page">
       <div class="eyebrow">臺北影子工單計畫</div>
-      <h1 class="section-title mt8">用「做過的工作」取代「待過的年資」。</h1>
+      <h1 class="section-title mt8"><span class="heading-phrase">用「做過的工作」</span><wbr><span class="heading-phrase">取代</span><wbr><span class="heading-phrase">「待過的年資」。</span></h1>
       <p class="section-sub">這是 2026 臺北市政府青年局公共政策創意提案競賽的提案原型，用來展示政策的實際運作方式。</p>
 
       <details class="proposal-evidence mt24"><summary>為什麼需要影子工單？查看提案數據</summary><div class="prose">
@@ -279,7 +279,7 @@
         <p><b>AI 不是一下就能抓到錯誤嗎？</b><br>每張工單上架前會先用主流 AI 實測，AI 自己能發現的錯誤不計分；計分的錯誤必須跨文件比對、或依主管給的情境判斷才看得出來。</p>
         <p><b>沒有自主學習習慣的人會參加嗎？</b><br>這正是遊戲化與戰隊機制的目的；另建議與臺北市立大學等學校合作，把工單融入課程作業。</p>
       </div>
-      <div class="row mt24"><a class="px-btn" href="#/tasks">進入公會大廳 ▶</a><a class="btn btn-ghost" href="#/gov">${icon('chart')}看市府儀表板</a></div>
+      <div class="row mt24"><a class="px-btn" href="#/tasks">進入公會大廳 ${icon('arrowRight')}</a><a class="btn btn-ghost" href="#/gov">${icon('chart')}看市府儀表板</a></div>
     </div>`
   });
 

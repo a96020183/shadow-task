@@ -1,12 +1,14 @@
 /* ======================================================================
    像素層：公會大廳（青年端）
    ====================================================================== */
-@font-face { font-family: "Cubic 11"; src: url("../fonts/Cubic_11-subset.woff2") format("woff2"); font-display: swap; }
+/* 像素字只負責英數與少數符號；中文落到下一個字型（city.css 的 --pixel）。 */
+@font-face { font-family: "Cubic 11"; src: url("../fonts/Cubic_11-subset.woff2") format("woff2"); font-display: swap; unicode-range: U+0020-007E, U+00B7, U+2192; }
+@font-face { font-family: "Noto Sans TC Black"; src: url("../fonts/NotoSansTC-Black-subset.woff2") format("woff2"); font-weight: 100 1000; font-display: swap; }
 :root { --px-edge: var(--ink); --px-drop: rgba(21, 23, 28, .9); --r1: #0e7c66; --r2: var(--night); --r3: #c93a3a; --night: #141a3a; }
 :root[data-theme="dark"] { --px-drop: #000; }
 @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) { --px-drop: #000; } }
 
-.px { font-family: "Cubic 11", var(--font); -webkit-font-smoothing: none; font-weight: 400; letter-spacing: .03em; }
+.px { font-family: var(--pixel); font-weight: 400; letter-spacing: .03em; }
 .px-22 { font-size: 22px; line-height: 1.25; }
 .px-33 { font-size: 33px; line-height: 1.15; }
 .px-44 { font-size: 44px; line-height: 1.1; }

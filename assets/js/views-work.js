@@ -118,7 +118,7 @@
     function html() {
       return `<div class="wrap page" style="padding-top:24px">
         <div class="ws-head">
-          <div><div class="row" style="gap:8px"><a class="btn btn-text btn-sm" href="#/task/${t.id}">${icon('arrowLeft')}工單說明</a><span class="ticket-id">${t.code}</span>${H.orgTag(t)}${a.practice ? '<span class="tag tag-warn">練習模式</span>' : ''}</div><h1 class="mt8">${esc(t.title)}</h1></div>
+          <div><div class="row" style="gap:8px"><a class="btn btn-text btn-sm" href="#/task/${t.id}">${icon('arrowLeft')}工單說明</a><span class="ticket-id">${t.code}</span>${H.orgTag(t)}${a.practice ? '<span class="tag tag-warn">練習模式</span>' : ''}</div><h1 class="mt8">${APP.ui.heading(t.title)}</h1></div>
           <div class="row"><span class="faint" style="font-size:12px" data-saved>已自動儲存</span><span class="timer">${icon('clock')}<span data-clock>${fmtClock(Date.now() - a.startedAt)}</span></span><button class="btn btn-text btn-sm" data-abandon>放棄重來</button></div>
         </div>
         <div class="stepper" role="list">${STEPS.map((n, i) => `<div role="listitem" class="st ${i + 1 < a.step ? 'done' : ''} ${i + 1 === a.step ? 'cur' : ''}" ${i + 1 < a.step ? `data-goto="${i + 1}"` : ''}><i>${i + 1 < a.step ? '✓' : i + 1}</i>${n}</div>`).join('')}</div>
@@ -249,14 +249,14 @@
     const html = () => {
       const i = D.idx;
       return `<div class="wrap wrap-narrow page">
-        <div class="row-between"><div><div class="eyebrow">${t.code}・成果答辯</div><h1 class="mt8" style="font-size:22px">${esc(t.title)}</h1></div><div class="dots">${D.qs.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>
+        <div class="row-between"><div><div class="eyebrow">${t.code}・成果答辯</div><h1 class="mt8" style="font-size:22px">${APP.ui.heading(t.title)}</h1></div><div class="dots">${D.qs.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>
         <div class="examiner mt24"><div class="avatar">職</div><div><b>職人答辯官・王經理</b>（模擬）<div class="faint" style="font-size:12.5px">原型以文字作答。正式版為 15 分鐘視訊答辯，由資深與退休職人依你的成果追問。</div></div></div>
         <div class="card card-pad mt16">
           <div class="def-meta"><span class="eyebrow">第 ${i + 1} 題 / 共 ${D.qs.length} 題</span><div class="ring" data-ring><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--paper-2)" stroke-width="6"/><circle data-arc cx="32" cy="32" r="27" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="0"/></svg><span data-left>3:00</span></div></div>
           <div class="def-q">${esc(D.qs[i])}</div>
           <textarea class="textarea" style="min-height:170px" data-def placeholder="說明你的判斷依據。引用具體數字會更有說服力。">${esc(D.answers[i])}</textarea>
           <div class="hint"><span>建議 3 分鐘內作答；超時不扣分，只會記錄。</span><span data-dc>${len(D.answers[i])} 字</span></div>
-          <div class="ws-actions"><span></span><button class="${i === D.qs.length - 1 ? 'px-btn' : 'btn btn-primary'}" data-dnext>${i === D.qs.length - 1 ? '完成答辯，查看結果 ▶' : '下一題 ' + icon('arrowRight')}</button></div>
+          <div class="ws-actions"><span></span><button class="${i === D.qs.length - 1 ? 'px-btn' : 'btn btn-primary'}" data-dnext>${i === D.qs.length - 1 ? '完成答辯，查看結果 ' + icon('arrowRight') : '下一題 ' + icon('arrowRight')}</button></div>
         </div>
       </div>`;
     };
@@ -339,9 +339,9 @@
         <div class="clear-banner px-edge">${px.skyline()}
           <div class="float-stars">${stars.map(([x, y], i) => `<span style="left:${x}%;top:${y}%;animation-delay:${i * .25}s">${px.sprite('star', { size: 16 + (i % 3) * 6 })}</span>`).join('')}</div>
           <div class="clear-in">
-            <div><div class="eyebrow" style="color:#ffc93c">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? '工單完成！' : '差一點！'}</h1><p>${esc(t.title)}</p>
+            <div><div class="eyebrow" style="color:var(--accent)">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? '工單完成！' : '差一點！'}</h1><p>${esc(t.title)}</p>
               <div class="row mt16">${r.badges.map(b => `<span title="${esc(APP.BADGES[b].n)}">${px.sprite(APP.px.BADGE_SPRITE[b], { size: 30 })}</span>`).join('')}</div></div>
-            <div class="clear-score"><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? '#7fe0c9' : a.practice ? '#ffc93c' : '#ff8a8a'};margin-bottom:14px">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="num">${r.total}</div><div class="xpg px px-22">+${r.xp} XP${r.levelUp ? ` <span class="lvup">LEVEL UP！</span>` : ''}</div></div>
+            <div class="clear-score"><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? 'var(--teal)' : a.practice ? 'var(--accent)' : 'var(--red)'};margin-bottom:14px">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="num">${r.total}</div><div class="xpg px px-22">+${r.xp} XP${r.levelUp ? ` <span class="lvup">LEVEL UP！</span>` : ''}</div></div>
           </div>
         </div>
 

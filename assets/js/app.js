@@ -38,6 +38,19 @@
 
   let current = null;
 
+  function setMenu(open, restoreFocus = true) {
+    const links = $('[data-links]'), button = $('[data-menu]');
+    const wasOpen = links.classList.contains('open');
+    links.classList.toggle('open', open);
+    document.body.classList.toggle('menu-open', open);
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? '關閉選單' : '開啟選單');
+    button.innerHTML = icon(open ? 'x' : 'menu');
+    $('.menu-backdrop').hidden = !open;
+    if (open) links.querySelector('a').focus();
+    else if (wasOpen && restoreFocus) button.focus({ preventScroll: true });
+  }
+
   function shell() {
     document.body.innerHTML = `
       <a class="sr-only skip" href="#/" data-skip>跳到主要內容</a>
@@ -52,19 +65,20 @@
           <button class="icon-btn menu-btn" data-menu aria-label="開啟選單" aria-expanded="false" aria-controls="main-links">${icon('menu')}</button>
         </div>
       </div></header>
+      <div class="menu-backdrop" hidden></div>
       <main id="view" tabindex="-1"></main>
       <nav class="mobile-nav" aria-label="手機主要導覽">${[['#/', '首頁', 'ticket'], ['#/tasks', '青年', 'user'], ['#/company', '企業', 'briefcase'], ['#/gov', '市府', 'chart'], ['#/mentor', '職人', 'chat']].map(([h,n,i]) => `<a href="${h}">${icon(i)}<span>${n}</span></a>`).join('')}</nav>
       <footer class="foot"><div class="wrap foot-grid">
         <div style="max-width:560px"><a class="brand" href="#/">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
           <p class="mt12">本網站為「2026 臺北市政府青年局公共政策創意提案競賽」的提案原型，<b>不是臺北市政府的官方服務</b>。網站中的企業、局處名稱、人物與數據皆為虛構或示範，統計數據另註明出處。你的作答只存在這台裝置的瀏覽器，不會上傳到任何伺服器。</p>
-          <p class="mt8 faint">像素字型：Cubic 11（俐方體 11 號，SIL OFL 1.1）。</p></div>
+          <p class="mt8 faint">字型：Cubic 11（俐方體 11 號）、Noto Sans TC，皆為 SIL OFL 1.1。</p></div>
         <div class="stack" style="--gap:6px"><b style="color:var(--ink)">頁面</b>${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}<a href="#/learn">學習成效榜</a></div>
         <details class="prototype-tools"><summary>原型操作</summary><div class="row"><a href="#" data-load-demo>載入示範帳號</a><a href="#" data-reset>重設為新帳號</a></div></details>
       </div></footer>`;
     document.addEventListener('click', e => {
       if (e.target.closest('[data-theme-toggle]')) { APP.theme.set(APP.theme.effective() === 'dark' ? 'light' : 'dark'); paintChrome(); }
-      if (e.target.closest('[data-menu]')) { const open = $('[data-links]').classList.toggle('open'); $('[data-menu]').setAttribute('aria-expanded', String(open)); }
-      if (e.target.closest('a[href^="#/"]')) { $('[data-links]').classList.remove('open'); $('[data-menu]').setAttribute('aria-expanded', 'false'); }
+      if (e.target.closest('[data-menu]')) setMenu(!$('[data-links]').classList.contains('open'));
+      else if ($('[data-links]').classList.contains('open') && (!e.target.closest('[data-links]') || e.target.closest('a'))) setMenu(false);
       if (e.target.closest('[data-load-demo]')) { e.preventDefault(); confirmDemo(); }
       if (e.target.closest('[data-reset]')) { e.preventDefault(); confirmReset(); }
       if (e.target.closest('[data-demo-chip]')) demoMenu();
@@ -88,7 +102,11 @@
   function paintChrome() {
     const s = APP.store.get();
     const hash = location.hash || '#/';
-    $$('[data-links] a').forEach((a, i) => a.classList.toggle('active', NAV[i][2].test(hash)));
+    $$('[data-links] a').forEach((a, i) => {
+      const active = NAV[i][2].test(hash);
+      a.classList.toggle('active', active);
+      active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+    });
     $$('.mobile-nav a').forEach(a => {
       const h = a.getAttribute('href');
       const active = h === '#/' ? /^#\/(?:try(?:\/review)?)?$/.test(hash) : h === '#/tasks' ? /^#\/(tasks|task|work|defense|result|squad|join|portfolio|resume|onepage|learn)/.test(hash) : hash.startsWith(h);
@@ -105,6 +123,7 @@
   }
 
   function render() {
+    setMenu(false);
     const path = (location.hash || '#/').slice(1) || '/';
     document.body.dataset.route = (path.split('/')[1] || 'home').split('?')[0];
     document.body.classList.toggle('professional', /^(company|gov|mentor|verify|onepage|p)$/.test(document.body.dataset.route));
@@ -199,8 +218,16 @@
     shell();
     window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { const l = $('[data-links]'); if (l && l.classList.contains('open')) { l.classList.remove('open'); const m = $('[data-menu]'); if (m) { m.setAttribute('aria-expanded', 'false'); m.focus(); } } }
+      if (!$('[data-links]').classList.contains('open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); setMenu(false); }
+      if (e.key === 'Tab') {
+        const items = [...$$('[data-links] a'), $('[data-menu]')];
+        const i = items.indexOf(document.activeElement);
+        e.preventDefault();
+        items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus();
+      }
     });
+    window.addEventListener('resize', () => { if (innerWidth > 1180) setMenu(false, false); });
     if (window.matchMedia) {
       const mq = matchMedia('(prefers-color-scheme: dark)');
       if (mq.addEventListener) mq.addEventListener('change', paintChrome);

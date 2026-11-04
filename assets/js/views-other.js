@@ -100,11 +100,11 @@
     if (!p.entries.length) return {
       title: '我的工單履歷',
       html: `<div class="wrap wrap-narrow page"><div class="card empty">${px.sprite('scroll', { size: 64 })}<h2 class="mt16" style="font-size:22px">你的工單履歷還是空的</h2><p class="muted mt8">完成第一張工單並通過答辯，就會出現在這裡。</p>
-        <div class="row mt24" style="justify-content:center"><a class="px-btn" href="#/tasks">去公會大廳接單 ▶</a><a class="btn btn-ghost" href="#/p/y0507">看範例履歷</a></div></div></div>`
+        <div class="row mt24" style="justify-content:center"><a class="px-btn" href="#/tasks">去公會大廳接單 ${icon('arrowRight')}</a><a class="btn btn-ghost" href="#/p/y0507">看範例履歷</a></div></div></div>`
     };
     return {
       title: '我的工單履歷',
-      html: `<div class="wrap page"><div class="row-between no-print"><div><div class="eyebrow">工單履歷</div><h1 class="section-title mt8">${s.demo ? '示範帳號・' : ''}${esc(p.name)} 的工單履歷</h1></div></div><div class="mt24">${portfolioHTML(p)}</div></div>`,
+      html: `<div class="wrap page"><div class="row-between no-print"><div><div class="eyebrow">工單履歷</div><h1 class="section-title mt8"><span class="heading-phrase">${s.demo ? '示範帳號・' : ''}</span><wbr><span class="heading-phrase">${esc(p.name)}</span><wbr><span class="heading-phrase"> 的工單履歷</span></h1></div></div><div class="mt24">${portfolioHTML(p)}</div></div>`,
       mount(root) {
         APP.ui.mountTips(root);
         root.addEventListener('click', e => {
@@ -214,8 +214,8 @@
       html: `<div class="wrap page">
 
         <h1 class="section-title">依工作成果找人才</h1><p class="company-intro">虛構示範人才・盲審隱藏姓名與學校。能力判定以答辯驗證為準；面試前須答辯。</p>
-        <div class="company-tabs"><div class="tabs" role="tablist">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-        <div data-body>${body()}</div>
+        <div class="company-tabs"><div class="tabs" role="tablist" aria-label="企業專區">${[['talent', '人才搜尋'], ['post', '上架工單'], ['inv', `我的邀約（${(s.invites || []).length}）`]].map(([k, n]) => `<button role="tab" id="company-tab-${k}" aria-controls="company-panel" aria-selected="${tab === k}" tabindex="${tab === k ? '0' : '-1'}" data-tab="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+        <div data-body id="company-panel" role="tabpanel" aria-labelledby="company-tab-${tab}" tabindex="0">${body()}</div>
         <details class="proposal-evidence mt24"><summary>企業招募現況與資料出處</summary>        <div class="grid g3 mt24">
           <div class="card kpi"><div class="label">補一個職缺平均花費</div><div class="value">60.3 天</div><div class="delta muted" style="font-weight:400">104 人資調查，2025</div></div>
           <div class="card kpi"><div class="label">新人 6 個月留任率</div><div class="value">65.4%</div><div class="delta muted" style="font-weight:400">104 人資調查，2025</div></div>
@@ -224,7 +224,26 @@
 </details>
       </div>`,
       mount(root) {
-        const re = () => { $('[data-body]', root).innerHTML = body(); $$('[data-tab]', root).forEach(b => b.classList.toggle('on', b.dataset.tab === tab)); };
+        const re = () => {
+          const panel = $('[data-body]', root);
+          panel.innerHTML = body();
+          panel.setAttribute('aria-labelledby', `company-tab-${tab}`);
+          $$('[data-tab]', root).forEach(b => {
+            const selected = b.dataset.tab === tab;
+            b.classList.toggle('on', selected);
+            b.setAttribute('aria-selected', String(selected));
+            b.tabIndex = selected ? 0 : -1;
+          });
+        };
+        root.addEventListener('keydown', e => {
+          const currentTab = e.target.closest('[role="tab"]');
+          if (!currentTab || !['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+          e.preventDefault();
+          const tabs = $$('[role="tab"]', root);
+          const index = tabs.indexOf(currentTab);
+          const next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+          tabs[next].click(); tabs[next].focus();
+        });
         root.addEventListener('click', e => {
           const el = e.target.closest('[data-tab],[data-g],[data-sort],[data-invite],[data-function],[data-shortlist]'); if (!el) return;
           if (el.dataset.function) { functionFilter = el.dataset.function; re(); $(`[data-function="${functionFilter}"]`, root).focus(); }
@@ -284,7 +303,7 @@
   V.squad = () => {
     const s = APP.store.get();
     if (!s.onboarded) return {
-      title: '戰隊', html: `<div class="wrap wrap-narrow page"><div class="px-card empty">${px.sprite('shield', { size: 64 })}<h2 class="mt16 px px-33">組一支戰隊</h2><p class="muted mt8">先建立角色，才能組隊或接受邀請。</p><button class="px-btn mt24" data-onboard>建立角色 ▶</button></div></div>`,
+      title: '戰隊', html: `<div class="wrap wrap-narrow page"><div class="px-card empty">${px.sprite('shield', { size: 64 })}<h2 class="mt16 px px-33">組一支戰隊</h2><p class="muted mt8">先建立角色，才能組隊或接受邀請。</p><button class="px-btn mt24" data-onboard>建立角色 ${icon('arrowRight')}</button></div></div>`,
       mount(root) { root.addEventListener('click', e => { if (e.target.closest('[data-onboard]')) APP.onboard(() => APP.render()); }); }
     };
     const q = APP.squad.get();
@@ -301,7 +320,7 @@
       title: '戰隊與邀請',
       html: `<div class="wrap page">
         <div class="eyebrow">戰隊與邀請</div>
-        <h1 class="section-title mt8">一個人接單容易放棄，一隊人會互相催。</h1>
+        <h1 class="section-title mt8"><span class="heading-phrase">一個人接單</span><wbr><span class="heading-phrase">容易放棄，</span><wbr><span class="heading-phrase">一隊人會互相催。</span></h1>
         <p class="section-sub">2–5 人一隊，每週一起完成戰隊目標；沒有隊友也能加入系統配對的練習小組。用邀請碼拉朋友，好友<b>通過第一張工單的答辯</b>後雙方才得到回饋券；不發現金、獎勵設上限，沒有灌人頭的誘因。</p>
         <div class="grid g2 mt32" style="align-items:start">
           ${q ? `<div class="px-card px-panel" style="padding:22px">
@@ -313,7 +332,7 @@
           </div>` : `<form class="px-card px-panel stack" style="--gap:14px;padding:22px" data-create>
             <div class="row" style="gap:16px"><div class="squad-crest">${px.sprite('shield', { size: 56 })}</div><div><div class="px px-33">建立戰隊</div><div class="faint" style="font-size:12.5px">同學、同事、轉職的朋友都可以</div></div></div>
             <label class="field"><span>戰隊名稱</span><input class="input" name="name" maxlength="12" required placeholder="例：夜貓接案隊"></label>
-            <button class="px-btn" type="submit">建立戰隊 ▶</button>
+            <button class="px-btn" type="submit">建立戰隊 ${icon('arrowRight')}</button>
             <div class="callout info">${icon('users')}<div>沒有認識的人也沒關係：<button type="button" class="btn btn-text btn-sm" data-match style="padding:0 4px">加入系統配對的練習小組</button>，和同職能、同時段的人一起練。</div></div></form>`}
           <div class="px-card px-panel" style="padding:22px">
             <h4 class="px px-22">${px.sprite('scroll', { size: 22 })}我的邀請碼</h4>
@@ -354,7 +373,7 @@
     return {
       title: '戰隊邀請',
       html: `<div class="wrap wrap-narrow page"><div class="lobby-banner px-edge">${px.skyline()}<div class="lobby-in" style="align-items:center;justify-content:center;text-align:center"><div class="lobby-title"><div class="eyebrow">INVITE・${esc(code)}</div><h1 class="px px-44">你被邀請加入公會</h1><p style="margin:10px auto 0">朋友邀請你一起接影子工單。你完成第一張工單並通過答辯後，你們各得一張「職人 1 對 1 回饋券」。</p>
-        ${own ? '<p class="mt16" style="color:#ffc93c">（這是你自己的邀請碼）</p>' : `<button class="px-btn lg mt24" data-accept>${s.onboarded ? '接受邀請 ▶' : '建立角色並接受邀請 ▶'}</button>`}</div></div></div></div>`,
+        ${own ? '<p class="mt16" style="color:var(--accent)">（這是你自己的邀請碼）</p>' : `<button class="px-btn lg mt24" data-accept>${s.onboarded ? '接受邀請' : '建立角色並接受邀請'} ${icon('arrowRight')}</button>`}</div></div></div></div>`,
       mount(root) {
         root.addEventListener('click', e => {
           if (!e.target.closest('[data-accept]')) return;
@@ -475,7 +494,7 @@
       title: '面試決策卡・工單履歷查驗',
       html: `<div class="wrap wrap-narrow page"><article class="decision-card">
         ${APP.ui.verifyNotice()}
-        <h1 class="section-title mt16">${esc(hit.t.title)}</h1><p class="decision-role">適合職缺：${esc(evidence.role || hit.t.role)}</p>
+        <h1 class="section-title mt16">${APP.ui.heading(hit.t.title)}</h1><p class="decision-role">適合職缺：${esc(evidence.role || hit.t.role)}</p>
 
         <section class="review-dialogue"><h2>他怎麼說</h2><blockquote>${esc(hit.def || evidence.answer || '此紀錄尚無可公開的答辯節錄。')}</blockquote>
         <h2>${aiOnly ? "驗證狀態" : "職人評語"}</h2><p>${esc(aiOnly ? "此工單僅完成 AI 初評，尚無職人答辯評語；能力判定須待答辯驗證。" : mine ? '本機紀錄尚無真人職人評語；此處呈現提案示範：' + (evidence.comment || '需由職人複核。') : hit.grade === 'B' || hit.grade === 'C' ? '能說出處理方向，但資料核對與效果檢查還需要練習。' : evidence.comment || '')}</p><p class="try-note">${esc(aiOnly ? '企業邀約面試前須完成答辯。' : (evidence.reviewer || '職人答辯官').replace(/[，・]示範/g, ''))}</p></section>

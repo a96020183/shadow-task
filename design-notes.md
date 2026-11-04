@@ -77,3 +77,13 @@
 ### 尚未驗證與維護取捨
 
 未做 iOS Safari、Android Chrome、LINE 實機掃碼或真人計時；安全區已實作，仍需決賽前實機走一次。原型資料與核發限制沿用既有說明。此版以最後載入的 city.css 統一既有三份樣式，避免大幅搬動原功能；後續維護應以 city.css 的 tokens 與覆寫為準。只提交 design-C，未部署、未 push，因此線上 QR 目的頁尚未更新。
+
+## 收尾（2026/11/05）：字體改成「中文黑體、數字像素」
+
+使用者選定 C，但覺得中文全用像素字太難讀。
+
+- **字體分工**：中文標題、按鈕、標籤用 Noto Sans TC Black（`--heading`）；像素字 Cubic 11 只負責英數（`@font-face` 加 `unicode-range: U+0020-007E, U+00B7, U+2192`），用在工單編號、等級、分數、驗證碼（`--pixel`／`--mono`）；內文用手機系統字（`--font`）。`.px` class 改走 `var(--pixel)`，不再寫死字型。
+- **字型檔**：`tools/subset_font.py` 一次產兩個子集：Cubic 11 英數約 4 KB、Noto Sans TC Black（含英數，中英混排同粗細）約 175 KB。官方字型快取在 `.font-cache/`（不進 git）。OFL 授權檔同放 `assets/fonts/`。
+- **從 A 版收尾搬來的行為**（與外觀無關的部分）：`▶` 全換成 `icon('arrowRight')`、按鈕箭頭靠右、工單標題與長標題用 `heading()`／`<wbr>` 在詞組間斷行、選單（遮罩、Esc、焦點循環、目前頁標記）、企業專區分頁的鍵盤操作、工單篩選的 `aria-pressed`、`#/resume` 別名。保留 C 自己的夜景、像素頭像、像素 Logo、過關畫面配色。
+- **白天模式**：工單大廳與過關橫幅的白字墊深色底。
+- **驗收**：瀏覽器實際字型掃描（CDP `getPlatformFontsForNode`）16 個路由，中文用像素字畫的元素由 212 處降到 0；`finals_audit.py` 新增字型子集涵蓋、字型總量 ≤ 250 KB、無文字三角形三項檢查，全部通過。
