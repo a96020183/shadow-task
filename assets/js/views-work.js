@@ -6,6 +6,11 @@
   const H = APP.h;
   const STEPS = ['理解需求', '拆解計畫', '實作產出', '驗證修正', '送出答辯'];
   const CHANGE_AFTER_MS = 40000;
+  const L2_LIMIT = 3 * 3600000;
+  const hms = ms => { const t = Math.max(0, Math.floor(ms / 1000)); return [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(n => String(n).padStart(2, '0')).join(':'); };
+  // 原型：一鍵填入範例作答（錄影與評審試用），抓錯仍要自己標記。
+  const fillBtn = t => t.sample ? `<button type="button" class="btn btn-text btn-sm fill-btn" data-fill>${icon('spark')}原型：填入範例作答</button>` : '';
+  const peerQ = (t, a) => Object.values(a.flags || {}).some(Boolean) ? '你說資料裡有錯，你是怎麼發現的？換成我，可能就照 AI 的數字用了。' : '你最重要的那個決定，為什麼這樣做？如果主管反對，你會拿哪個數字回他？';
 
   function flagLabel(task, key) {
     const [type, a, b] = key.split(':');
@@ -72,26 +77,26 @@
     function stepForm() {
       const s = a.step;
       if (s === 1) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 01・理解需求</div><h2 class="mt8" style="font-size:20px">先別急著做，確認你真的懂要做什麼。</h2>
+        <div class="eyebrow">STEP 01・理解需求</div><h2 class="mt8" style="font-size:20px">先別急著做，確認你真的懂要做什麼。</h2>${fillBtn(t)}
         <label class="field mt16"><span>用你自己的話重述這個任務<em>1–3 句</em></span><textarea class="textarea" data-bind="understanding.restate" placeholder="例：要在什麼限制下，交出什麼，給誰看…">${esc(a.understanding.restate)}</textarea></label>
         <label class="field mt16"><span>開工前，你想向主管確認哪些問題？<em>一行一題</em></span><textarea class="textarea" data-bind="understanding.questions" ${a.clarified ? 'readonly' : ''} placeholder="例：預算有沒有彈性？報告要給誰看？">${esc(a.understanding.questions)}</textarea></label>
         ${a.clarified ? `<div class="callout ok mt12">${icon('check')}<div>主管已回覆你的問題，請到資料區的「信件」查看。</div></div>` : `<button class="btn btn-ghost mt12" data-clarify>${icon('send')}送出確認問題給主管</button>`}
         <div class="ws-actions"><span></span><button class="btn btn-primary" data-next>下一步：拆解計畫 ${icon('arrowRight')}</button></div></div>`;
       if (s === 2) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 02・拆解計畫</div><h2 class="mt8" style="font-size:20px">把任務拆成可以檢查的步驟。</h2>
+        <div class="eyebrow">STEP 02・拆解計畫</div><h2 class="mt8" style="font-size:20px">把任務拆成可以檢查的步驟。</h2>${fillBtn(t)}
         <p class="muted mt8" style="font-size:13.5px">勾選你打算交給 AI 做的步驟。好的計畫會留一步給「驗證」。</p>
         <div class="plan-list mt16">${a.plan.map((p, i) => `<div class="plan-item"><span class="n">${i + 1}</span><input class="input" data-plan="${i}" value="${esc(p.t)}" placeholder="步驟 ${i + 1}"><label><input type="checkbox" data-planai="${i}" ${p.ai ? 'checked' : ''}>用 AI</label><button class="flag-btn" data-del="${i}" aria-label="刪除步驟">${icon('trash')}</button></div>`).join('')}</div>
         ${a.plan.length < 8 ? `<button class="btn btn-text mt8" data-add>${icon('plus')}新增步驟</button>` : ''}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：開始實作 ${icon('arrowRight')}</button></div></div>`;
       if (s === 3) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 03・實作產出</div><h2 class="mt8" style="font-size:20px">查過資料，再完成你的成果。</h2>
+        <div class="eyebrow">STEP 03・實作產出</div><h2 class="mt8" style="font-size:20px">查過資料，再完成你的成果。</h2>${fillBtn(t)}
         ${a.changeAt ? `<div class="callout bad mt12">${px.sprite('bolt', { size: 18 })}<div><b>需求已變更：</b>${esc(t.change.subject.replace(/【.*?】/, ''))}。請把成果調整成新版本。</div></div>` : `<div class="callout info mt12">${icon('info')}<div>發現可疑的資料或 AI 回答，記得在資料區標記 ⚑。</div></div>`}
         ${t.deliverables.map(d => `<label class="field deliv mt16"><span>${esc(d.label)}</span><textarea class="textarea" style="min-height:130px" data-ans="${d.id}" placeholder="${esc(d.hint)}">${esc(a.answers[d.id] || '')}</textarea><div class="hint"><span>${esc(d.hint)}</span><span data-cnt="${d.id}">${cnt(d)}</span></div></label>`).join('')}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：驗證修正 ${icon('arrowRight')}</button></div></div>`;
       if (s === 4) {
         const flagged = Object.keys(a.flags).filter(k => a.flags[k]);
         return `<div class="card card-pad">
-        <div class="eyebrow">STEP 04・驗證修正</div><h2 class="mt8" style="font-size:20px">交出去之前，再檢查一次。</h2>
+        <div class="eyebrow">STEP 04・驗證修正</div><h2 class="mt8" style="font-size:20px">交出去之前，再檢查一次。</h2>${fillBtn(t)}
         <div class="mt16"><b style="font-size:14px">你標記的可疑之處（${flagged.length}）</b>
           <div class="flag-summary mt8">${flagged.length ? flagged.map(k => `<div class="fs">${icon('flag')}<span style="flex:1">${esc(flagLabel(t, k))}</span><button class="btn btn-text btn-sm" data-unflag="${k}">取消</button></div>`).join('') : '<div class="callout warn">' + icon('alert') + '<div>你還沒有標記任何可疑之處。確定資料、文件和 AI 的回答都沒問題嗎？</div></div>'}</div></div>
         <label class="field mt16"><span>你怎麼驗證關鍵數字？</span><textarea class="textarea" data-bind="review.verify" placeholder="例：用試算表重算各管道成本，和 AI 的結果比對…">${esc(a.review.verify)}</textarea></label>
@@ -110,17 +115,40 @@
           <div class="card kpi" style="box-shadow:none"><div class="label">計畫步驟</div><div class="value">${a.plan.filter(p => len(p.t) >= 4).length}</div></div>
           <div class="card kpi" style="box-shadow:none"><div class="label">AI 對話</div><div class="value">${a.aiLog.length}</div></div>
         </div>
+        ${peerBox()}
         <div class="callout warn mt16">${px.sprite('bubble', { size: 18 })}<div>送出後會進入<b>答辯</b>：職人答辯官會問你 3 個問題，每題建議 3 分鐘內作答（超時不扣分）。送出後成果無法再修改；成績只有你看得到，要不要公開由你決定。</div></div>
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="px-btn" data-submit>${px.sprite('sword', { size: 18 })}送出，進入答辯</button></div></div>`;
     }
+    function peerBox() {
+      const st = APP.store.get(), q = st.squad, mates = q ? q.members.filter(m => !m.me && m.status === 'active') : [];
+      const p = (st.peer || []).find(x => x.dir === 'in' && x.task === t.id && x.fresh);
+      if (p) return `<div class="peer-box mt16" data-peer-box><div class="peer-q">${px.avatar(p.mate, 32)}<div><b>${esc(p.mate)} 先看了你的成果，問你：</b><p>「${esc(p.q)}」</p></div></div>
+        <label class="field mt12"><span>先練習回答<em>不計分，只有你和隊友看得到</em></span><textarea class="textarea" style="min-height:90px" data-peer-answer placeholder="說說你為什麼這樣做。">${esc(p.a || '')}</textarea></label></div>`;
+      return `<div class="peer-box mt16" data-peer-box><b>交件前，先給戰友問一題？</b><p class="muted mt8">隊友先看你的成果，問你一個「為什麼這樣做？」。正式答辯前，先練一次。選用，不計分。</p>
+        ${mates.length ? `<button type="button" class="btn btn-ghost mt12" data-peer-ask>${icon('users')}先給戰友問一題</button>` : `<a class="btn btn-ghost mt12" href="#/squad">${icon('users')}組戰隊後就能用</a>`}</div>`;
+    }
+    function fill(root) {
+      const x = t.sample; if (!x) return;
+      if (a.step === 1) { a.understanding.restate = x.restate; if (!a.clarified) a.understanding.questions = x.questions; }
+      if (a.step === 2) a.plan = x.plan.map((p, i) => ({ t: p, ai: i === 1 || /AI/.test(p) }));
+      if (a.step === 3) Object.assign(a.answers, x.answers, a.changeAt ? x.answersAfter : {});
+      if (a.step === 4) { a.review.verify = x.verify; a.review.change = x.change; a.disclosure.used = 'some'; a.disclosure.how = x.how; }
+      APP.store.log(a, 'step', '原型：填入範例作答'); save(); $('[data-form]', root).innerHTML = stepForm();
+      toast(a.step === 3 && a.changeAt ? '已填入調整後的範例' : '已填入範例，可以再修改', 'info', 1600);
+    }
     function cnt(d) { const n = len(a.answers[d.id]); return n >= d.minLen ? `<span class="ok">${n} 字 ✓</span>` : `${n} / ${d.minLen} 字`; }
 
+    function clockText() {
+      if (t.level !== 2) return fmtClock(Date.now() - a.startedAt);
+      return a.timerSkipped ? '示範：已跳過計時' : '剩 ' + hms(L2_LIMIT - (Date.now() - a.startedAt));
+    }
     function html() {
       return `<div class="wrap page" style="padding-top:24px">
         <div class="ws-head">
           <div><div class="row" style="gap:8px"><a class="btn btn-text btn-sm" href="#/task/${t.id}">${icon('arrowLeft')}工單說明</a><span class="ticket-id">${t.code}</span>${H.orgTag(t)}${a.practice ? '<span class="tag tag-warn">練習模式</span>' : ''}</div><h1 class="mt8">${APP.ui.heading(t.title)}</h1></div>
-          <div class="row"><span class="faint" style="font-size:12px" data-saved>已自動儲存</span><span class="timer">${icon('clock')}<span data-clock>${fmtClock(Date.now() - a.startedAt)}</span></span><button class="btn btn-text btn-sm" data-abandon>放棄重來</button></div>
+          <div class="row"><span class="faint" style="font-size:12px" data-saved>已自動儲存</span>${t.level === 2 ? `<span class="timer l2-timer" data-countdown>${icon('clock')}<span data-clock>${clockText()}</span></span>${a.timerSkipped ? '' : '<button class="btn btn-text btn-sm" data-skip-timer>示範：跳過計時</button>'}` : `<span class="timer">${icon('clock')}<span data-clock>${fmtClock(Date.now() - a.startedAt)}</span></span>`}<button class="btn btn-text btn-sm" data-abandon>放棄重來</button></div>
         </div>
+        ${t.level === 2 ? `<p class="stage-note">L2 為第三階段規劃，此為示範。限 3 小時・完成可得參與津貼（示範）・成果不得商用</p>` : ''}
         <div class="stepper" role="list">${STEPS.map((n, i) => `<div role="listitem" class="st ${i + 1 < a.step ? 'done' : ''} ${i + 1 === a.step ? 'cur' : ''}" ${i + 1 < a.step ? `data-goto="${i + 1}"` : ''}><i>${i + 1 < a.step ? '✓' : i + 1}</i>${n}</div>`).join('')}</div>
         <div class="ws-grid"><div data-panel>${panel()}</div><div data-form>${stepForm()}</div></div>
       </div>`;
@@ -169,10 +197,10 @@
       title: t.title,
       html: html(),
       mount(root) {
-        timers.push(setInterval(() => { const c = $('[data-clock]', root); if (c) c.textContent = fmtClock(Date.now() - a.startedAt); }, 1000));
+        timers.push(setInterval(() => { const c = $('[data-clock]', root); if (c) c.textContent = clockText(); }, 1000));
         armChange(root);
         root.addEventListener('click', e => {
-          const el = e.target.closest('[data-tab],[data-flag],[data-ask],[data-clarify],[data-next],[data-prev],[data-goto],[data-add],[data-del],[data-unflag],[data-submit],[data-abandon]');
+          const el = e.target.closest('[data-tab],[data-flag],[data-ask],[data-clarify],[data-next],[data-prev],[data-goto],[data-add],[data-del],[data-unflag],[data-submit],[data-abandon],[data-fill],[data-skip-timer],[data-peer-ask]');
           if (!el) return;
           const d = el.dataset;
           const refocus = sel => { const n = root.querySelector(sel); if (n) n.focus({ preventScroll: true }); };
@@ -197,6 +225,16 @@
           if (d.goto) { goStep(root, +d.goto); return; }
           if ('add' in d) { a.plan.push({ t: '', ai: false }); save(); $('[data-form]', root).innerHTML = stepForm(); return; }
           if (d.del) { a.plan.splice(+d.del, 1); if (!a.plan.length) a.plan.push({ t: '', ai: false }); save(); $('[data-form]', root).innerHTML = stepForm(); return; }
+          if ('fill' in d) { fill(root); return; }
+          if ('skipTimer' in d) { a.timerSkipped = true; APP.store.log(a, 'step', '示範：跳過計時'); save(); el.remove(); const c = $('[data-clock]', root); if (c) c.textContent = clockText(); return; }
+          if ('peerAsk' in d) {
+            const st = APP.store.get(), mate = st.squad.members.find(m => !m.me && m.status === 'active');
+            st.peer = st.peer || [];
+            st.peer.unshift({ id: 'pq' + Date.now(), dir: 'in', mate: mate.alias, task: t.id, q: peerQ(t, a), a: '', at: Date.now(), fresh: true });
+            APP.store.log(a, 'ask', `請戰友 ${mate.alias} 先問一題`); save();
+            $('[data-form]', root).innerHTML = stepForm(); const ta = $('[data-peer-answer]', root); if (ta) ta.focus();
+            toast(`${mate.alias} 看完你的成果，問了你一題（示範）`, 'ok'); return;
+          }
           if ('submit' in d) { a.step = 6; APP.store.log(a, 'submit', '送出成果，進入答辯'); save(); location.replace('#/defense/' + t.id); return; }
           if ('abandon' in d) modal({ title: '放棄這張工單？', body: '<p>作答內容會清除，可以重新接單。</p>', actions: [{ label: '繼續作答' }, { label: '放棄重來', cls: 'btn-primary', onClick: c => { c(); APP.store.resetAttempt(t.id); location.replace('#/task/' + t.id); } }] });
         });
@@ -209,6 +247,7 @@
             const dd = t.deliverables.find(x => x.id === d.ans); const c = $(`[data-cnt="${d.ans}"]`, root); if (c) c.innerHTML = cnt(dd);
             if (!a.changeAt && Object.values(a.answers).join('').length > 90) triggerChange(root);
           }
+          else if (d.peerAnswer !== undefined) { const p = (APP.store.get().peer || []).find(x => x.dir === 'in' && x.task === t.id && x.fresh); if (p) p.a = el.value; }
           else if (d.plan) a.plan[+d.plan].t = el.value;
           else return;
           autosave();
@@ -249,6 +288,7 @@
     const html = () => {
       const i = D.idx;
       return `<div class="wrap wrap-narrow page">
+        ${t.level === 2 ? '<p class="stage-note">L2 為第三階段規劃，此為示範</p>' : ''}
         <div class="row-between"><div><div class="eyebrow">${t.code}・成果答辯</div><h1 class="mt8" style="font-size:22px">${APP.ui.heading(t.title)}</h1></div><div class="dots">${D.qs.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>
         <div class="examiner mt24"><div class="avatar">職</div><div><b>職人答辯官・王經理</b>（模擬）<div class="faint" style="font-size:12.5px">原型以文字作答。正式版為 15 分鐘視訊答辯，由資深與退休職人依你的成果追問。</div></div></div>
         <div class="card card-pad mt16">
@@ -256,6 +296,7 @@
           <div class="def-q">${esc(D.qs[i])}</div>
           <textarea class="textarea" style="min-height:170px" data-def placeholder="說明你的判斷依據。引用具體數字會更有說服力。">${esc(D.answers[i])}</textarea>
           <div class="hint"><span>建議 3 分鐘內作答；超時不扣分，只會記錄。</span><span data-dc>${len(D.answers[i])} 字</span></div>
+          ${fillBtn(t)}
           <div class="ws-actions"><span></span><button class="${i === D.qs.length - 1 ? 'px-btn' : 'btn btn-primary'}" data-dnext>${i === D.qs.length - 1 ? '完成答辯，查看結果 ' + icon('arrowRight') : '下一題 ' + icon('arrowRight')}</button></div>
         </div>
       </div>`;
@@ -276,6 +317,7 @@
         tick(root); iv = setInterval(() => tick(root), 500);
         root.addEventListener('input', e => { if (e.target.dataset.def !== undefined) { D.answers[D.idx] = e.target.value; $('[data-dc]', root).textContent = len(e.target.value) + ' 字'; APP.store.save(); } });
         root.addEventListener('click', e => {
+          if (e.target.closest('[data-fill]')) { D.answers[D.idx] = t.sample.def[D.idx] || t.sample.def[0]; APP.store.save(); const ta = $('[data-def]', root); ta.value = D.answers[D.idx]; $('[data-dc]', root).textContent = len(ta.value) + ' 字'; return; }
           const nb = e.target.closest('[data-dnext]');
           if (!nb || nb.disabled || a.result) return;
           if (len(D.answers[D.idx]) < 8) { toast('請至少回答一兩句', 'warn'); return; }
@@ -305,6 +347,11 @@
       s.issued = s.issued || [];
       s.issued.push({ vid: r.vid, id: t.id, grade: r.grade, total: r.total, at: r.at, dims: r.dims, found: r.found, qn: r.qn, changeHits: r.changeHits, ai: !!(a.disclosure.used && a.disclosure.used !== 'none') });
     }
+    if (t.level === 2 && r.grade !== 'C') {
+      s.offers = s.offers || [];
+      s.offers.push({ task: t.id, company: t.org.replace(/（.*$/, ''), type: 'interview', at: r.at });
+    }
+    (s.peer || []).forEach(p => { if (p.task === t.id) delete p.fresh; });
     if (APP.squad) APP.squad.onComplete(t, r);
     APP.store.save();
   }
@@ -325,7 +372,10 @@
     const a = t && APP.store.attempt(id);
     if (!a || !a.result) return V.notFound();
     const r = a.result, s = APP.store.get();
-    const avg = APP.CANDIDATES.reduce((acc, c) => c.dims.map((v, i) => acc[i] + v), [0, 0, 0, 0, 0]).map(v => Math.round(v / APP.CANDIDATES.length * .92));
+    const avg = APP.PLATFORM_AVG;
+    const company = t.org.replace(/（.*$/, '');
+    const offer = t.level === 2 ? (pass0 => pass0 ? `<section class="offer-card mt24" data-offer><div class="offer-mark">${px.sprite('chest', { size: 40 })}</div><div><h2>${esc(company)}已邀請你面試（示範）</h2><p>你在企業挑戰的表現達到邀約標準。對方同意後，平台才會揭露你的聯絡方式。</p><p class="offer-meta">參與津貼（示範）已核發・成果不得商用・L2 為第三階段規劃，此為示範</p><a class="btn btn-ghost mt12" href="#/gov">${icon('chart')}看市府成效追蹤的邀約數</a></div></section>`
+      : `<section class="offer-card mt24 miss"><div><h2>這次還沒達到邀約標準（示範）</h2><p>參與津貼照樣核發（示範）。看完下方解析，可以再挑戰一次。L2 為第三階段規劃，此為示範。</p></div></section>`)(r.grade !== 'C') : '';
     const fb = APP.scoring.feedback(t, r);
     const stars = [[6, 18], [14, 70], [42, 12], [58, 76], [74, 22], [88, 64]];
     const evCls = { change: 'warn', flag: 'bad', done: 'ok', submit: 'ok', ask: 'ok' };
@@ -339,11 +389,12 @@
         <div class="clear-banner px-edge">${px.skyline()}
           <div class="float-stars">${stars.map(([x, y], i) => `<span style="left:${x}%;top:${y}%;animation-delay:${i * .25}s">${px.sprite('star', { size: 16 + (i % 3) * 6 })}</span>`).join('')}</div>
           <div class="clear-in">
-            <div><div class="eyebrow" style="color:var(--accent)">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? '工單完成！' : '差一點！'}</h1><p>${esc(t.title)}</p>
+            <div><div class="eyebrow" style="color:var(--accent)">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? (t.level === 2 ? '挑戰完成！' : '工單完成！') : '差一點！'}</h1><p>${esc(t.title)}</p>
               <div class="row mt16">${r.badges.map(b => `<span title="${esc(APP.BADGES[b].n)}">${px.sprite(APP.px.BADGE_SPRITE[b], { size: 30 })}</span>`).join('')}</div></div>
             <div class="clear-score"><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? 'var(--teal)' : a.practice ? 'var(--accent)' : 'var(--red)'};margin-bottom:14px">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="num">${r.total}</div><div class="xpg px px-22">+${r.xp} XP${r.levelUp ? ` <span class="lvup">LEVEL UP！</span>` : ''}</div></div>
           </div>
         </div>
+        ${offer}
 
         <div class="result-hero mt32">
           <div class="card card-pad">

@@ -15,6 +15,7 @@
     [/^\/result\/([\w-]+)$/, m => V.result(m[1])],
     [/^\/portfolio$/, () => V.portfolio()],
     [/^\/resume$/, () => V.portfolio()],
+    [/^\/progress$/, () => V.progress()],
     [/^\/p\/([\w-]+)$/, m => V.publicPortfolio(m[1])],
     [/^\/company$/, () => V.company()],
     [/^\/gov$/, () => V.gov()],
@@ -26,15 +27,22 @@
     [/^\/verify\/([\w-]+)$/, m => APP.tryVerify(m[1]) || V.verify(m[1])],
     [/^\/about$/, () => V.about()]
   ];
+  // 頂部只留四個身分入口；「青年」涵蓋所有青年端頁面。
+  const YOUTH = /^#\/(tasks|task|work|defense|result|squad|join|portfolio|resume|onepage|learn|progress)(?:[/?]|$)/;
   const NAV = [
-    ['#/tasks', '公會大廳', /^#\/(tasks|task|work|defense|result)/],
-    ['#/squad', '戰隊', /^#\/(squad|join)/],
-    ['#/portfolio', '工單履歷', /^#\/(portfolio|resume|onepage|verify)/],
-    ['#/company', '企業專區', /^#\/(company|p\/)/],
-    ['#/gov', '市府儀表板', /^#\/gov/],
-    ['#/mentor', '職人答辯官', /^#\/mentor/],
-    ['#/about', '計畫說明', /^#\/(about|learn)/]
+    ['#/tasks', '青年', YOUTH],
+    ['#/company', '企業', /^#\/(company|p\/|verify\/)/],
+    ['#/gov', '市府', /^#\/gov/],
+    ['#/mentor', '職人', /^#\/mentor/]
   ];
+  // 青年區四頁互相切換的子分頁
+  const YOUTH_TABS = [
+    ['#/tasks', '公會大廳', /^#\/tasks$/],
+    ['#/squad', '戰隊', /^#\/squad$/],
+    ['#/portfolio', '工單履歷', /^#\/(portfolio|resume)$/],
+    ['#/progress', '我的進步', /^#\/progress$/]
+  ];
+  const PAGES = [['#/try', '60 秒體驗'], ['#/tasks', '公會大廳'], ['#/squad', '戰隊'], ['#/portfolio', '工單履歷'], ['#/progress', '我的進步'], ['#/learn', '學習成效榜'], ['#/company', '企業專區'], ['#/gov', '成效追蹤'], ['#/mentor', '職人答辯官'], ['#/about', '計畫說明']];
 
   let current = null;
 
@@ -57,7 +65,7 @@
       <details class="proto-bar"><summary>競賽提案原型・非市府官方服務 <span>說明</span></summary><p>這不是臺北市政府的官方服務。企業、局處、人物與數據皆為虛構或示範，統計數據另註出處。作答只存在這台裝置，不會上傳。</p></details>
       <header class="nav"><div class="wrap nav-in">
         <a class="brand" href="#/" aria-label="影子工單首頁">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
-        <nav id="main-links" class="nav-links" data-links aria-label="主要導覽">${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}</nav>
+        <nav id="main-links" class="nav-links" data-links aria-label="主要導覽">${NAV.map(([h, n]) => `<a href="${h}" data-nav>${n}</a>`).join('')}<a class="nav-cta" href="#/try" data-nav-cta>60 秒體驗${icon('arrowRight')}</a></nav>
         <div class="nav-right">
           <span data-demo></span>
           <button class="icon-btn" data-theme-toggle aria-label="切換深淺色">${icon('moon')}</button>
@@ -66,13 +74,14 @@
         </div>
       </div></header>
       <div class="menu-backdrop" hidden></div>
+      <div class="youth-bar" data-youth hidden></div>
       <main id="view" tabindex="-1"></main>
       <nav class="mobile-nav" aria-label="手機主要導覽">${[['#/', '首頁', 'ticket'], ['#/tasks', '青年', 'user'], ['#/company', '企業', 'briefcase'], ['#/gov', '市府', 'chart'], ['#/mentor', '職人', 'chat']].map(([h,n,i]) => `<a href="${h}">${icon(i)}<span>${n}</span></a>`).join('')}</nav>
       <footer class="foot"><div class="wrap foot-grid">
         <div style="max-width:560px"><a class="brand" href="#/">${LOGO}<span>影子工單<small>TAIPEI SHADOW-TASK</small></span></a>
           <p class="mt12">本網站為「2026 臺北市政府青年局公共政策創意提案競賽」的提案原型，<b>不是臺北市政府的官方服務</b>。網站中的企業、局處名稱、人物與數據皆為虛構或示範，統計數據另註明出處。你的作答只存在這台裝置的瀏覽器，不會上傳到任何伺服器。</p>
           <p class="mt8 faint">字型：Cubic 11（俐方體 11 號）、Noto Sans TC，皆為 SIL OFL 1.1。</p></div>
-        <div class="stack" style="--gap:6px"><b style="color:var(--ink)">頁面</b>${NAV.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}<a href="#/learn">學習成效榜</a></div>
+        <nav class="stack foot-pages" style="--gap:6px" aria-label="全部頁面"><b style="color:var(--ink)">頁面</b>${PAGES.map(([h, n]) => `<a href="${h}">${n}</a>`).join('')}</nav>
         <details class="prototype-tools"><summary>原型操作</summary><div class="row"><a href="#" data-load-demo>載入示範帳號</a><a href="#" data-reset>重設為新帳號</a></div></details>
       </div></footer>`;
     document.addEventListener('click', e => {
@@ -82,6 +91,8 @@
       if (e.target.closest('[data-load-demo]')) { e.preventDefault(); confirmDemo(); }
       if (e.target.closest('[data-reset]')) { e.preventDefault(); confirmReset(); }
       if (e.target.closest('[data-demo-chip]')) demoMenu();
+      if (e.target.closest('[data-reset-now]')) { APP.demo.fresh(); toast('已重設為新帳號。想看示範內容，按「改回示範帳號」', 'ok', 3600); render(); }
+      if (e.target.closest('[data-load-demo-now]')) { APP.demo.load(); toast('已改回示範帳號「小安」', 'ok'); render(); }
       if (e.target.closest('[data-skip]')) { e.preventDefault(); const v = $('#view'); if (v) v.focus(); }
     });
   }
@@ -102,14 +113,14 @@
   function paintChrome() {
     const s = APP.store.get();
     const hash = location.hash || '#/';
-    $$('[data-links] a').forEach((a, i) => {
+    $$('[data-links] a[data-nav]').forEach((a, i) => {
       const active = NAV[i][2].test(hash);
       a.classList.toggle('active', active);
       active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
     });
     $$('.mobile-nav a').forEach(a => {
       const h = a.getAttribute('href');
-      const active = h === '#/' ? /^#\/(?:try(?:\/review)?)?$/.test(hash) : h === '#/tasks' ? /^#\/(tasks|task|work|defense|result|squad|join|portfolio|resume|onepage|learn)/.test(hash) : hash.startsWith(h);
+      const active = h === '#/' ? /^#\/(?:try(?:\/review)?)?$/.test(hash) : h === '#/tasks' ? YOUTH.test(hash) : hash.startsWith(h);
       active ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
     });
     const lv = level(s.xp);
@@ -118,7 +129,16 @@
     $('[data-pill]').innerHTML = judging ? '' : s.onboarded
       ? `<span class="avatar" style="background:var(--night);padding:2px">${px.avatar(s.user.name, 24)}</span><span class="who">${esc(s.user.name)} <span class="lv">LV.${lv.lv}</span></span>`
       : `<span class="avatar">${icon('user')}</span><span class="who">訪客</span>`;
-    $('[data-demo]').innerHTML = s.demo ? `<button class="chip" data-demo-chip style="border-color:var(--accent);background:var(--accent-soft)">${icon('star')}示範模式</button>` : '';
+    const quiet = /^#\/(?:try(?:\/review)?)?$/.test(hash);
+    $('[data-demo]').innerHTML = s.demo && !quiet ? `<button class="chip demo-chip" data-demo-chip>${icon('user')}示範帳號</button>` : '';
+    /^#\/try/.test(hash) ? $('[data-nav-cta]').setAttribute('aria-current', 'page') : $('[data-nav-cta]').removeAttribute('aria-current');
+    // 青年區四頁：子分頁＋帳號狀態（示範帳號可一鍵重設）
+    const bar = $('[data-youth]');
+    const onTab = YOUTH_TABS.some(t => t[2].test(hash));
+    bar.hidden = !onTab;
+    bar.innerHTML = onTab ? `<div class="wrap youth-in"><nav class="youth-tabs" aria-label="青年區">${YOUTH_TABS.map(([h, n, re]) => `<a href="${h}" ${re.test(hash) ? 'aria-current="page"' : ''}>${n}</a>`).join('')}</nav>${s.demo
+      ? `<div class="acct"><span class="acct-state">${icon('user')}示範帳號・${esc(s.user.name)}</span><button class="btn btn-ghost btn-sm" data-reset-now>重設為新帳號</button></div>`
+      : !s.onboarded ? `<div class="acct"><span class="acct-state">新帳號・尚未建立角色</span><button class="btn btn-ghost btn-sm" data-load-demo-now>改回示範帳號</button></div>` : ''}</div>` : '';
     $('[data-theme-toggle]').innerHTML = icon(APP.theme.effective() === 'dark' ? 'sun' : 'moon');
   }
 

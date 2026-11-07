@@ -13,6 +13,8 @@
       invites: [],
       postedTasks: [],
       tips: [],
+      peer: [],
+      offers: [],
       learn: {}
     };
   }
@@ -32,7 +34,7 @@
     const out = Object.assign(f, m);
     out.user = Object.assign(fresh().user, obj(m.user) ? m.user : {});
     out.anxiety = Object.assign({ pre: null, post: null }, obj(m.anxiety) ? m.anxiety : {});
-    ['invites', 'postedTasks', 'tips', 'referrals', 'issued'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
+    ['invites', 'postedTasks', 'tips', 'referrals', 'issued', 'peer', 'offers'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
     ['learn', 'pubHidden', 'reviews', 'best'].forEach(k => { if (!obj(out[k])) out[k] = {}; });
     out.xp = Number.isFinite(out.xp) ? out.xp : 0;
     const ok = id => (APP.TASKS || []).some(t => t.id === id && t.status === 'open');

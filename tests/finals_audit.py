@@ -2,6 +2,7 @@
 需要已安裝的 Python Playwright、Chrome、OpenCV 與 NumPy（實際解碼 QR）。
 """
 import json
+import re
 from pathlib import Path
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -22,6 +23,10 @@ with TTFont(ROOT/'.font-cache/NotoSansTC-wght.ttf') if (ROOT/'.font-cache/NotoSa
     missing = expected - set(subset.getBestCmap())
     assert not missing, 'Noto Sans TC subset is stale; rerun tools/subset_font.py: ' + ''.join(map(chr, sorted(missing)))[:40]
 assert not (set('▶►»') & source_chars), 'Use icon("arrowRight") instead of text triangles'
+# 示範工單只用辦公室型職務的虛構企業，不放餐飲業。
+demo_text = ''.join(p.read_text(encoding='utf8') for p in (ROOT/'assets/js').glob('*.js'))
+assert not re.search('咖啡|好日子|餐飲|餐廳|飲料', demo_text), 'Demo companies must be office-type, not food & beverage'
+assert '?v=' in (ROOT/'index.html').read_text(encoding='utf8'), 'CSS/JS URLs need a version query'
 fonts_kb = sum((ROOT/'assets/fonts'/n).stat().st_size for n in ['Cubic_11-subset.woff2', 'NotoSansTC-Black-subset.woff2']) / 1024
 assert fonts_kb <= 250, f'Home page fonts {fonts_kb:.0f} KB > 250 KB'
 
@@ -148,6 +153,248 @@ def audit_round_three(page):
     assert '工單 #0142' in page.locator('.home-ticket').inner_text()
     assert page.locator('.home-action .btn').evaluate("e=>getComputedStyle(e).borderRadius==='0px' && getComputedStyle(e).boxShadow!=='none'")
 
+TASK_FLOWS = {
+    'gov-youth-fair': dict(flags=[('table', 'row:reg:r8'), ('doc', 'claim:c2')], asks=['p2']),
+    'l2-growth': dict(flags=[('table', 'row:f:r5'), ('doc', 'claim:g1')], asks=['g1']),
+}
+
+def run_full_task(page, tid):
+    # 每一步都要真的有工作內容：確認問題、拆解、標記錯誤、交件、需求變更後調整、答辯。
+    spec = TASK_FLOWS[tid]
+    page.wait_for_selector('[data-fill]')
+    page.locator('[data-fill]').click()
+    assert len(page.locator('[data-bind="understanding.restate"]').input_value()) > 20
+    page.locator('[data-clarify]').click()
+    assert page.locator('.mail').count() >= 2
+    page.locator('[data-next]').click()
+    page.locator('[data-fill]').click()
+    assert page.locator('[data-plan]').count() >= 4
+    page.locator('[data-next]').click()
+    for tab, key in spec['flags']:
+        page.locator(f'[data-tab="{tab}"]').click()
+        page.locator(f'[data-flag="{key}"]').first.click()
+    page.locator('[data-tab="ai"]').click()
+    for q in spec['asks']:
+        page.locator(f'[data-ask="{q}"]').click()
+        page.locator(f'[data-flag="ai:{q}"]').click()
+    page.locator('[data-fill]').click()
+    assert page.locator('[data-ans]').count() == 4
+    page.locator('[data-next]').click()
+    assert page.locator('.modal').is_visible() and '突發事件' in page.locator('.modal').inner_text()
+    page.locator('.modal-f .btn-primary').click()
+    before = page.locator('[data-ans="d1"]').input_value()
+    page.locator('[data-fill]').click()
+    assert page.locator('[data-ans="d2"]').input_value() != '' and page.locator('.callout.bad').count() == 1
+    page.locator('[data-next]').click()
+    assert page.locator('.fs').count() == 3
+    page.locator('[data-fill]').click()
+    page.locator('[data-next]').click()
+    assert page.locator('[data-submit]').count() == 1
+    page.locator('[data-submit]').click()
+    page.wait_for_selector('[data-def]')
+    for i in range(3):
+        page.locator('[data-fill]').click()
+        assert len(page.locator('[data-def]').input_value()) > 20
+        page.locator('[data-dnext]').click()
+        page.wait_for_timeout(80)
+    page.wait_for_selector('.clear-banner')
+    return before
+
+
+def audit_finals_two(page, browser):
+    page.set_viewport_size({'width': 1280, 'height': 900})
+    # 1. 桌機選單：四個主項＋60 秒體驗
+    page.evaluate("location.hash='#/'")
+    page.wait_for_selector('.home-action')
+    assert page.locator('[data-links] a[data-nav]').all_text_contents() == ['青年', '企業', '市府', '職人']
+    assert page.locator('[data-links] a').count() == 5
+    cta = page.locator('[data-links] .nav-cta')
+    assert cta.is_visible() and cta.inner_text().strip() == '60 秒體驗' and cta.get_attribute('href') == '#/try'
+    assert '計畫說明' not in page.locator('[data-links]').inner_text()
+    assert page.locator('.foot a[href="#/about"]').count() >= 1
+    assert page.locator('.foot-pages a[href="#/progress"]').count() == 1
+    for route, nav in [('#/tasks', '青年'), ('#/squad', '青年'), ('#/progress', '青年'), ('#/work/co-logistics-cs', '青年'), ('#/company', '企業'), ('#/p/y0507', '企業'), ('#/gov', '市府'), ('#/mentor', '職人')]:
+        page.evaluate('(r)=>location.hash=r', route)
+        page.wait_for_timeout(60)
+        assert page.locator('[data-links] a[aria-current="page"]').inner_text() == nav, route
+    # 青年區四頁有子分頁，可互相切換；舊網址照常可開
+    for route, tab in [('#/tasks', '公會大廳'), ('#/squad', '戰隊'), ('#/portfolio', '工單履歷'), ('#/resume', '工單履歷'), ('#/progress', '我的進步')]:
+        page.evaluate('(r)=>location.hash=r', route)
+        page.wait_for_timeout(60)
+        assert page.locator('.youth-tabs a').count() == 4, route
+        assert page.locator('.youth-tabs a[aria-current="page"]').inner_text() == tab, route
+    for route in ['#/about', '#/gov', '#/squad', '#/learn', '#/mentor', '#/onepage']:
+        page.evaluate('(r)=>location.hash=r', route)
+        page.wait_for_timeout(60)
+        assert page.locator('#view h1').count() >= 1 and '找不到這個頁面' not in page.locator('#view').inner_text(), route
+    page.evaluate("location.hash='#/company'")
+    page.wait_for_timeout(60)
+    assert page.locator('[data-youth]').is_hidden()
+
+    # 2. 成效追蹤
+    page.evaluate("location.hash='#/gov'")
+    page.wait_for_selector('.gov-evidence')
+    assert page.locator('#view h1').inner_text() == '成效追蹤'
+    assert page.title().startswith('成效追蹤')
+    assert '市府用來看計畫有沒有效、決定要不要擴大' in page.locator('.gov-lead').inner_text()
+    gates = page.locator('[data-gates] li')
+    assert gates.count() == 4
+    gate_text = page.locator('[data-gates]').inner_text()
+    for t in ['HR 情境實驗', '40%', 'ICC ≥ 0.70', '非頂大', '達標', '未達標', '數值為示範']:
+        assert t in gate_text, t
+    assert page.locator('[data-gates] li.miss').count() == 1
+    assert '儀表板' not in page.locator('body').inner_text()
+
+    # 7. 企業按「邀請面試」→ 成效追蹤的獲面試邀約 +1
+    n0 = int(page.locator('[data-funnel-interview]').inner_text().replace(',', ''))
+    page.evaluate("location.hash='#/company'")
+    page.wait_for_selector('.candidate-row')
+    assert page.locator('.candidate-row [data-invite]').first.inner_text().strip() == '邀請面試'
+    page.locator('.candidate-row [data-invite]').first.click()
+    page.locator('.modal-f .btn-primary').click()
+    assert '成效追蹤' in page.locator('.toast').last.inner_text()
+    page.evaluate("location.hash='#/gov'")
+    page.wait_for_selector('[data-funnel-interview]')
+    n1 = int(page.locator('[data-funnel-interview]').inner_text().replace(',', ''))
+    assert n1 == n0 + 1, (n0, n1)
+    assert '含本機示範操作' in page.locator('.gov-funnel').inner_text()
+
+    # 6. 給企業看的工單履歷：雷達（此人實線 vs 平台平均虛線）在長條上方，長條旁寫差距
+    for route in ['#/p/y0507', '#/verify/TPE-PW-2026-BA58C8', '#/portfolio', '#/onepage']:
+        page.evaluate('(r)=>location.hash=r', route)
+        page.wait_for_selector('[data-dims-block]')
+        block = page.locator('[data-dims-block]').first
+        assert block.locator('svg .radar-self').count() == 1 and block.locator('svg .radar-base').count() == 1, route
+        assert block.locator('svg .radar-base').get_attribute('stroke-dasharray'), route
+        assert block.locator('svg .radar-self').get_attribute('stroke-dasharray') is None, route
+        assert '此人' in block.inner_text() and '平台平均（示範）' in block.inner_text(), route
+        diffs = block.locator('.dc-diff').all_text_contents()
+        assert len(diffs) == 5 and all(re.match(r'^比平均 [+−±]\d+$', d.strip()) for d in diffs), (route, diffs)
+        assert block.locator('svg').first.bounding_box()['y'] < block.locator('.dim-compare').bounding_box()['y'], route
+    page.evaluate("location.hash='#/p/y0507'")
+    page.wait_for_selector('[data-dims-block]')
+    avg = page.evaluate('APP.PLATFORM_AVG')
+    me = page.evaluate("APP.CANDIDATES.find(c=>c.id==='y0507').dims")
+    assert page.locator('.dc-diff').first.inner_text().strip().endswith(str(abs(me[0] - avg[0])))
+
+    # 4. 沒有公開的個人進步排名；我的進步只跟自己比
+    page.evaluate("location.hash='#/tasks'")
+    page.wait_for_selector('.quests')
+    body = page.locator('#view').inner_text()
+    assert '本週進步榜' not in body and page.locator('.rank').count() == 0
+    for alias in ['Y-0745', 'Y-0163', 'Y-0833', 'Y-0291', 'Y-0620']:
+        assert alias not in body, alias
+    assert page.evaluate('typeof APP.BOARD') == 'undefined'
+    assert page.locator('[data-progress-link]').count() == 1
+    page.evaluate("location.hash='#/progress'")
+    page.wait_for_selector('[data-progress]')
+    assert page.locator('.pg-card').count() == 2
+    assert '平台平均' not in page.locator('#view').inner_text()
+    assert '第一張' in page.locator('.radar-legend').inner_text() and '最新一張' in page.locator('.radar-legend').inner_text()
+    assert '六成的人第一次都沒抓到這個錯' in page.locator('.progress-tip').inner_text() and '示範數據' in page.locator('.progress-tip').inner_text()
+    page.evaluate("location.hash='#/squad'")
+    page.wait_for_selector('.school-row')
+    assert '平均進步分數' in page.locator('#view').inner_text()
+    page.evaluate("location.hash='#/learn'")
+    page.wait_for_selector('.learn-page')
+
+    # 5. 戰友互問：示範有一筆隊友問你（已回答）、一筆你要問隊友（待辦）
+    page.evaluate("location.hash='#/squad'")
+    page.wait_for_selector('[data-peer]')
+    peer = page.locator('[data-peer]')
+    assert '戰友互問' in peer.inner_text() and '為什麼這樣做？' in peer.inner_text()
+    assert peer.locator('.peer-atext').count() >= 1
+    page.locator('[data-peer-q]').first.fill('為什麼把重複扣款排第一？')
+    page.locator('[data-peer-send]').first.click()
+    page.wait_for_selector('[data-peer]')
+    assert '已送出，等 Mia 回答' in page.locator('[data-peer]').inner_text()
+    assert '雙方各得「職人 1 對 1 回饋券」' in page.locator('#view').inner_text()
+
+    # 3. L2 示範工單：第三階段・可試玩，從頭玩到尾並出現面試邀約
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.evaluate("location.hash='#/tasks'")
+    page.wait_for_selector('.quests')
+    card = page.locator('.quests a[href="#/task/l2-growth"]')
+    assert '第三階段開放・可試玩示範' in card.inner_text()
+    assert '已解鎖・企業出題中' not in page.locator('#view').inner_text()
+    assert '格子學院' in card.inner_text()
+    card.click()
+    page.wait_for_selector('.stage-note')
+    detail = page.locator('#view').inner_text()
+    assert page.locator('.stage-note').inner_text().strip() == 'L2 為第三階段規劃，此為示範'
+    for t in ['完成可得參與津貼（示範）', '成果不得商用', '限 3 小時', '面試邀約', '免費試聽轉付費為什麼掉了？']:
+        assert t in detail, t
+    page.locator('[data-start]').click()
+    page.wait_for_selector('[data-countdown]')
+    assert page.locator('[data-countdown]').inner_text().strip().startswith('剩 02:5')
+    assert 'L2 為第三階段規劃，此為示範' in page.locator('#view').inner_text()
+    page.locator('[data-skip-timer]').click()
+    assert '已跳過計時' in page.locator('[data-countdown]').inner_text()
+    run_full_task(page, 'l2-growth')
+    offer = page.locator('[data-offer]')
+    assert '格子學院已邀請你面試（示範）' in offer.inner_text()
+    assert page.locator('.clear-banner .stamp').inner_text().strip().startswith('已驗證')
+    page.evaluate("location.hash='#/gov'")
+    page.wait_for_selector('[data-funnel-interview]')
+    assert int(page.locator('[data-funnel-interview]').inner_text().replace(',', '')) == n1 + 1
+
+    # 9. L1 青年市集完整工單：重新挑戰，從主管交代走到核發工單履歷
+    page.evaluate("APP.redo('gov-youth-fair')")
+    page.wait_for_selector('[data-fill]')
+    assert page.locator('.mail-subj').first.inner_text().startswith('交辦：青年市集')
+    run_full_task(page, 'gov-youth-fair')
+    assert '工單完成！' in page.locator('.clear-banner').inner_text()
+    assert '已寫入你的工單履歷' in page.locator('#view').inner_text()
+    assert page.locator('[data-offer]').count() == 0
+    assert all(k in page.evaluate("APP.store.attempt('gov-youth-fair').result.found") for k in ['row:reg:r8', 'claim:c2', 'ai:p2'])
+
+    # 10. 示範企業都是辦公室型工作；查驗範例代碼不變
+    page.evaluate("location.hash='#/verify/TPE-PW-2026-BA58C8'")
+    page.wait_for_selector('.decision-card')
+    assert page.locator('#view h1').inner_text() == '記帳 App 付費會員續訂率下滑診斷'
+
+    # 8. 新訪客首次開啟就是示範帳號；可一鍵重設；既有帳號不被覆蓋
+    fresh = browser.new_context(viewport={'width': 390, 'height': 844})
+    fp = fresh.new_page()
+    fp.on('pageerror', lambda error: errors.append('fresh: ' + str(error)))
+    fp.goto(base + '#/portfolio')
+    fp.wait_for_selector('.youth-tabs')
+    assert '示範帳號・小安' in fp.locator('.acct-state').inner_text()
+    assert fp.locator('.wo-d').count() == 2
+    assert fp.evaluate("localStorage.getItem('shadowtask.v1')") is None
+    for route in ['#/squad', '#/progress', '#/company']:
+        fp.evaluate('(r)=>location.hash=r', route)
+        fp.wait_for_timeout(80)
+        assert '還是空的' not in fp.locator('#view').inner_text() and fp.locator('[data-progress-empty]').count() == 0, route
+    fp.set_viewport_size({'width': 1280, 'height': 900})
+    fp.evaluate("location.hash='#/tasks'")
+    fp.wait_for_timeout(60)
+    assert fp.locator('[data-demo-chip]').inner_text().strip() == '示範帳號'
+    for route in ['#/', '#/try']:
+        fp.evaluate('(r)=>location.hash=r', route)
+        fp.wait_for_timeout(60)
+        assert fp.locator('[data-demo-chip]').count() == 0 and fp.locator('[data-youth]').is_hidden(), route
+    fp.set_viewport_size({'width': 390, 'height': 844})
+    fp.evaluate("location.hash='#/portfolio'")
+    fp.wait_for_selector('[data-reset-now]')
+    fp.locator('[data-reset-now]').click()
+    fp.wait_for_selector('[data-load-demo-now]')
+    assert '你的工單履歷還是空的' in fp.locator('#view').inner_text()
+    fp.evaluate("location.hash='#/progress'")
+    fp.wait_for_selector('[data-progress-empty]')
+    assert '還沒有可以比較的工單' in fp.locator('#view').inner_text()
+    fp.locator('[data-load-demo-now]').click()
+    fp.wait_for_selector('[data-progress]')
+    own = json.dumps({'user': {'name': '自己的帳號', 'school': '', 'who': '', 'visible': True, 'blind': True, 'createdAt': 1}, 'onboarded': True, 'attempts': {}, 'xp': 30})
+    fp.evaluate('(v)=>localStorage.setItem("shadowtask.v1", v)', own)
+    fp.goto(base + '#/tasks')
+    fp.reload()
+    fp.wait_for_selector('.quests')
+    assert fp.evaluate('APP.store.get().user.name') == '自己的帳號' and not fp.evaluate('APP.store.get().demo')
+    assert fp.locator('.acct').count() == 0
+    fresh.close()
+
+
 with sync_playwright() as pw:
     browser = pw.chromium.launch(channel='chrome', headless=True)
     context = browser.new_context(viewport={'width':390,'height':844}, device_scale_factor=1, color_scheme='light')
@@ -253,7 +500,7 @@ with sync_playwright() as pw:
     candidates = page.evaluate('APP.CANDIDATES.map(c=>c.id)')
     taskids = page.evaluate('APP.TASKS.map(t=>t.id)')
     ai_route = page.evaluate("'/verify/'+APP.portfolioCand(APP.CANDIDATES[2]).entries[0].vid")
-    routes = ['/', '/try', '/try/review', '/verify/TPE-TRY-2026', '/tasks', '/portfolio', '/onepage', '/onepage?try=1', '/verify/TPE-PW-2026-BA58C8', '/verify/unknown', '/company','/gov','/mentor','/squad','/join/NIGHT7','/about','/learn','/work/co-logistics-cs','/result/gov-youth-fair','/result/co-coffee-retention','/not-found']
+    routes = ['/', '/try', '/try/review', '/verify/TPE-TRY-2026', '/tasks', '/portfolio', '/onepage', '/onepage?try=1', '/verify/TPE-PW-2026-BA58C8', '/verify/unknown', '/company','/gov','/mentor','/squad','/join/NIGHT7','/about','/learn','/progress','/work/co-logistics-cs','/result/gov-youth-fair','/result/co-coffee-retention','/not-found']
     routes += ['/task/'+i for i in taskids] + ['/p/'+i for i in candidates]
     routes += [ai_route]
     reports = []
@@ -373,6 +620,15 @@ with sync_playwright() as pw:
     for width in [360,390,430,1280]:
         page.set_viewport_size({'width':width,'height':844})
         reports.append(dict(route='/defense/co-logistics-cs',width=width,**page.evaluate(SCAN)))
+    # 決賽前第二輪：選單、成效追蹤、L2 示範、雷達、我的進步、戰友互問、邀約連動、示範帳號
+    audit_finals_two(page, browser)
+    for route in ['/progress', '/result/l2-growth', '/squad', '/gov']:
+        for width in [360,390,430,1280]:
+            page.set_viewport_size({'width':width,'height':844 if width<500 else 900})
+            page.evaluate('(r)=>location.hash="#"+r',route)
+            page.wait_for_timeout(80)
+            reports.append(dict(route=route+' (round 2)',width=width,**page.evaluate(SCAN)))
+    page.set_viewport_size({'width':390,'height':844})
     # Storage unavailable, file://, theme toggle, reduced motion, retained printed QR target.
     denied = browser.new_context(viewport={'width':360,'height':780}, color_scheme='dark', reduced_motion='reduce')
     denied.add_init_script("Object.defineProperty(window,'localStorage',{get(){throw new Error('Storage disabled')}})")
@@ -418,7 +674,7 @@ with sync_playwright() as pw:
         print('QR decoder unavailable; SVG generation verified')
     for width in [360,390,430,1280]:
         p2.set_viewport_size({'width':width,'height':844})
-        for route in ['/','/tasks','/portfolio','/company','/gov','/mentor','/verify/TPE-PW-2026-BA58C8','/try/review','/verify/TPE-TRY-2026','/squad','/learn','/about',ai_route]:
+        for route in ['/','/tasks','/portfolio','/progress','/company','/gov','/mentor','/verify/TPE-PW-2026-BA58C8','/try/review','/verify/TPE-TRY-2026','/squad','/learn','/about',ai_route]:
             p2.evaluate('(r)=>location.hash="#"+r',route)
             p2.wait_for_timeout(40)
             reports.append(dict(route=route+' (dark/file/storage denied)',width=width,**p2.evaluate(SCAN)))

@@ -38,7 +38,7 @@
         <div class="home-action"><a class="btn btn-accent" href="#/try">開始 60 秒體驗 ${icon('arrowRight')}</a><p>不用註冊，不用輸入資料。</p></div>
       </section>
       <section class="home-evidence"><div><h2>把「我會」變成做過的證據。</h2><p>留下怎麼抓錯、怎麼調整、為什麼這樣做。<br>完整工單經職人複核，再交給企業看。</p></div><a class="btn btn-ghost" href="#/verify/TPE-PW-2026-BA58C8">看一張查驗範例 ${icon('arrowRight')}</a></section>
-      <nav class="home-roles" aria-label="依身分進入"><a href="#/tasks"><b>青年</b><span>接工單、組戰隊</span>${icon('arrowRight')}</a><a href="#/company"><b>企業</b><span>看成果、找人才</span>${icon('arrowRight')}</a><a href="#/gov"><b>市府</b><span>追蹤就業成果</span>${icon('arrowRight')}</a><a href="#/mentor"><b>答辯官</b><span>追問決策、複核成果</span>${icon('arrowRight')}</a></nav>
+      <nav class="home-roles" aria-label="依身分進入"><a href="#/tasks"><b>青年</b><span>接工單、組戰隊</span>${icon('arrowRight')}</a><a href="#/company"><b>企業</b><span>看成果、找人才</span>${icon('arrowRight')}</a><a href="#/gov"><b>市府</b><span>看成效追蹤</span>${icon('arrowRight')}</a><a href="#/mentor"><b>答辯官</b><span>追問決策、複核成果</span>${icon('arrowRight')}</a></nav>
       <div class="home-team"><span>職影未來提案團隊</span><a href="#/about">計畫說明與資料出處 ${icon('arrowRight')}</a></div>
     </div>`
   });
@@ -50,35 +50,27 @@
     const pm = APP.portfolioMine();
     const verified = pm.entries;
     let filter = 'all', q = '';
-    const l1 = verified.filter(e => e.t.level === 1);
-    const l2open = l1.length >= 2 && l1.reduce((n, e) => n + e.total, 0) / l1.length >= 75;
     const quest = t => {
       const st = H.stateOf(t);
-      if (t.status === 'locked' && l2open) t = Object.assign({}, t, { status: 'soon', unlocked: true });
-      const cls = 'q-l' + t.level;
+      const cls = 'q-l' + t.level + (t.demo ? ' q-demo' : '');
       const rar = t.level === 1 ? 'L1 見習工單' : t.level === 2 ? 'L2 企業挑戰' : 'L3 正式錄用';
-      const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? `<span class="q-state" style="color:var(--teal)">進行中 ${icon('arrowRight')}</span>` : t.status === 'open' ? `<span class="q-state">接單 ${icon('arrowRight')}</span>` : t.status === 'soon' ? (t.unlocked ? '<span class="tag tag-ok">已解鎖・企業出題中</span>' : '<span class="tag tag-warn">即將開放</span>') : '';
+      const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? `<span class="q-state" style="color:var(--teal)">進行中 ${icon('arrowRight')}</span>` : t.demo ? `<span class="q-state q-try">試玩 ${icon('arrowRight')}</span>` : t.status === 'open' ? `<span class="q-state">接單 ${icon('arrowRight')}</span>` : t.status === 'soon' ? '<span class="tag tag-warn">即將開放</span>' : '';
       const inner = `<div class="q-stripe"></div><div class="q-body">
           <div class="q-top"><span class="rar">${rar}</span><span class="ticket-id">${t.code}</span></div>
+          ${t.level === 2 ? `<p class="stage-tag">${t.demo ? '第三階段開放・可試玩示範' : '第三階段開放'}</p>` : ''}
           <h3>${esc(t.title)}</h3>
           <div class="q-org">${icon(t.orgType === 'gov' ? 'building' : 'briefcase')}${esc(t.org)}</div>
           <p>${esc(t.summary)}</p>
           <div class="q-skills">${t.skills.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
         </div>
-        <div class="q-foot"><div class="q-reward"><span>${px.sprite('coin', { size: 14 })}<b>+${H.xpFor(t)}</b> XP</span><span>${icon('clock')}${t.hours} 小時</span>${t.done ? `<span>${icon('users')}${t.done.toLocaleString()}（示範）</span>` : ''}</div>${stateTxt}</div>
-        ${t.status === 'locked' ? `<div class="q-lock"><div>${px.sprite('lock', { size: 30 })}<b>尚未解鎖</b><span>${esc(t.unlock)}</span></div></div>` : ''}`;
+        <div class="q-foot"><div class="q-reward">${t.level === 2 ? `<span>${px.sprite('coin', { size: 14 })}參與津貼</span><span>${icon('clock')}限時 ${t.hours} 小時</span>` : `<span>${px.sprite('coin', { size: 14 })}<b>+${H.xpFor(t)}</b> XP</span><span>${icon('clock')}${t.hours} 小時</span>`}${t.done ? `<span>${icon('users')}${t.done.toLocaleString()}（示範）</span>` : ''}</div>${stateTxt}</div>
+        ${t.status === 'locked' ? `<div class="q-lock"><div>${px.sprite('lock', { size: 30 })}<b>尚未開放</b><span>${esc(t.unlock)}</span></div></div>` : ''}`;
       return t.status === 'open' ? `<a class="px-card ${cls}" href="#/task/${t.id}" data-q="${esc(t.title + t.skills.join('') + t.org)}" data-type="${t.orgType}" data-st="${st.k}">${inner}</a>`
         : `<div class="px-card ${cls}" data-q="${esc(t.title + t.skills.join('') + t.org)}" data-type="${t.orgType}" data-st="${st.k}">${inner}</div>`;
     };
-    const board = APP.BOARD.slice();
     const mine = done.slice().sort((x, y) => x.a.result.at - y.a.result.at);
-    if (me.s.onboarded && mine.length >= 2) {
-      const first = mine[0].a.result.total, last = mine[mine.length - 1].a.result.total;
-      board.push({ alias: me.name, gain: last - first, title: `第 1 張 ${first} → 第 ${mine.length} 張 ${last}`, me: true });
-    }
-    board.sort((a, b) => b.gain - a.gain);
+    const growth = mine.length >= 2 ? `第一張 ${mine[0].a.result.total} 分，最新一張 ${mine[mine.length - 1].a.result.total} 分。` : mine.length === 1 ? '再完成一張，就能比較自己哪一項變強。' : '完成工單後，看看自己哪一項變強。';
     const sq = me.s.squad;
-    const l1done = l1.length;
     return {
       title: '公會大廳',
       html: `<div class="wrap page">
@@ -92,7 +84,7 @@
 
         <details class="lobby-tiers mt24"><summary>三個階段與解鎖進度</summary><div class="tiers mt16">
           <div class="px-card tier cur">${px.sprite('scroll', { size: 40 })}<div><div class="rk">TIER 01・開放中</div><div class="px px-22">見習工單</div><p>市府與企業的歷史工單，首張計分工單須通過答辯</p></div></div>
-          <div class="px-card tier ${l2open ? '' : 'locked'}">${px.sprite('chest', { size: 40 })}<div><div class="rk">TIER 02・${l2open ? '已解鎖' : `完成 ${l1done}/2 張 L1・平均 A 解鎖`}</div><div class="px px-22">企業挑戰</div><p>企業自己出題篩人，表現好直接邀面試</p></div></div>
+          <div class="px-card tier">${px.sprite('chest', { size: 40 })}<div><div class="rk">TIER 02・第三階段開放・可試玩示範</div><div class="px px-22">企業挑戰</div><p>企業用已結案業務出題篩人，限 3 小時、付參與津貼，表現好直接邀面試</p></div></div>
           <div class="px-card tier locked">${px.sprite('star', { size: 40 })}<div><div class="rk">TIER 03・企業邀請制</div><div class="px px-22">正式錄用</div><p>面試或實習，接上市府既有的實習補助</p></div></div>
         </div>
 
@@ -106,10 +98,9 @@
             <div class="empty hide" data-empty><div class="big-ico">${icon('search')}</div><b>沒有符合的工單</b></div>
           </div>
           <aside class="stack" style="--gap:28px">
-            <div class="px-card px-panel"><h4 class="px px-22">${px.sprite('star', { size: 22 })}本週進步榜</h4>
-              <p class="faint" style="font-size:12px;margin-top:4px">比的是自己第一張到最近一張的進步，不是誰分數高。</p>
-              <div class="mt8">${board.slice(0, 6).map((b, i) => `<div class="rank ${b.me ? 'me' : ''}"><span class="no">${i + 1}</span><span class="ini">${px.avatar(b.alias, 30)}</span><div><b>${esc(b.alias)}</b><small>${esc(b.title)}</small></div><span class="xp">${b.gain >= 0 ? '+' : ''}${b.gain} 分</span></div>`).join('')}</div>
-            </div>
+            <a class="px-card px-panel" href="#/progress" style="text-decoration:none" data-progress-link><h4 class="px px-22">${px.sprite('star', { size: 22 })}我的進步</h4>
+              <p class="muted mt8">${growth}只跟自己比，不公開排名。</p>
+              <span class="px-btn sm mt12" style="align-self:flex-start">看我的進步 ${icon('arrowRight')}</span></a>
             <a class="px-card px-panel" href="#/squad" style="text-decoration:none"><h4 class="px px-22">${px.sprite('shield', { size: 22 })}${sq ? esc(sq.name) : '組一支戰隊'}</h4>
               <p class="muted mt8" style="font-size:13.5px">${sq ? `本週戰隊目標 ${Math.min(sq.goal, APP.squad.progress())}/${sq.goal} 張工單` : '找 2–4 位朋友一起接單。好友完成第一張工單，你們都拿到「職人 1 對 1 回饋」。'}</p>
               <span class="px-btn sm mt12" style="align-self:flex-start">${sq ? '查看戰隊' : '建立戰隊'} ${icon('arrowRight')}</span></a>
@@ -146,9 +137,23 @@
     const t = H.task(id);
     if (!t || t.status !== 'open') return V.notFound();
     const st = H.stateOf(t);
+    const L2 = t.level === 2;
     const cta = st.k === 'done' ? `<a class="px-btn lg" style="width:100%" href="#/result/${t.id}">查看結果 ${icon('arrowRight')}</a><button class="btn btn-text mt8" style="width:100%" data-redo>${icon('refresh')}重新挑戰（變體工單）</button>`
       : st.k === 'working' ? `<a class="px-btn lg" style="width:100%" href="#/work/${t.id}">繼續工作 ${icon('arrowRight')}</a>`
+      : L2 ? `<button class="px-btn lg" style="width:100%" data-start>${px.sprite('sword', { size: 20 })}開始企業挑戰（示範）</button>`
       : `<label class="check" style="margin-bottom:12px;font-size:13px"><input type="checkbox" data-practice ${APP.store.completed().length ? '' : 'checked'}><div><b>練習模式</b><div class="faint" style="font-size:12px">不計入工單履歷、不公開，只拿回饋。第一次建議先練習。</div></div></label><button class="px-btn lg" style="width:100%" data-start>${px.sprite('sword', { size: 20 })}接下這張工單</button>`;
+    const rules = L2 ? [
+      ['clock', '限 3 小時', '工作台會倒數計時。這是示範，可以跳過計時。'],
+      ['shield', '企業付參與津貼', '完成可得參與津貼（示範）。津貼補償你花的時間，不是買你的成果；金額不低於法定最低時薪 × 時數。'],
+      ['bolt', '過程中會有突發事件', '資料裡埋了錯誤，AI 也會出錯；做到一半，主管會改需求。'],
+      ['mic', '最後要答辯', '表現好的人，企業會直接邀請面試。'],
+      ['scroll', '成果不得商用', '企業只用已結案業務出題，成果不作任何商業使用，著作權歸你。']
+    ] : [
+      ['spark', '可以使用 AI', '任何 AI 工具都可以用，但要揭露怎麼用、怎麼驗證。用得好會加分。'],
+      ['bolt', '過程中會有突發事件', '資料裡埋了錯誤，AI 也會出錯；做到一半，主管可能改需求。'],
+      ['mic', '最後要答辯', '職人答辯官會針對你的決定追問。答辯是確認「這是你本人的判斷」的關鍵；超時不扣分，成績公開與否由你決定。'],
+      ['shield', '不是免費勞動', '只使用已結案或模擬的工單，成果不作任何商業使用，著作權歸你。']
+    ];
     return {
       title: t.title,
       html: `<div class="wrap page">
@@ -156,6 +161,7 @@
         <div class="detail-grid mt16">
           <div class="stack" style="--gap:20px">
             <div class="card card-pad">
+              ${L2 ? `<p class="stage-note">L2 為第三階段規劃，此為示範</p>` : ''}
               <div class="row"><span class="ticket-id">${t.code}</span>${H.orgTag(t)}<span class="lvl lvl-${t.level}">L${t.level}</span></div>
               <h1 class="mt12" style="font-size:clamp(22px,3vw,30px)">${APP.ui.heading(t.title)}</h1>
               <p class="muted mt8">${esc(t.org)}・${esc(t.industry)}・${esc(t.role)}</p>
@@ -171,12 +177,7 @@
             <div class="card card-pad">
               <h3 style="font-size:16px">接單前你要知道</h3>
               <div class="mt8">
-                ${[
-                  ['spark', '可以使用 AI', '任何 AI 工具都可以用，但要揭露怎麼用、怎麼驗證。用得好會加分。'],
-                  ['bolt', '過程中會有突發事件', '資料裡埋了錯誤，AI 也會出錯；做到一半，主管可能改需求。'],
-                  ['mic', '最後要答辯', '職人答辯官會針對你的決定追問。答辯是確認「這是你本人的判斷」的關鍵；超時不扣分，成績公開與否由你決定。'],
-                  ['shield', '不是免費勞動', '只使用已結案或模擬的工單，成果不作任何商業使用，著作權歸你。']
-                ].map(r => `<div class="rule"><div class="ri">${P(r[0])}</div><div><b>${r[1]}</b><span>${r[2]}</span></div></div>`).join('')}
+                ${rules.map(r => `<div class="rule"><div class="ri">${P(r[0])}</div><div><b>${r[1]}</b><span>${r[2]}</span></div></div>`).join('')}
               </div>
             </div>
           </div>
@@ -185,10 +186,10 @@
               <dl class="kv">
                 <dt>出題單位</dt><dd>${esc(t.org)}</dd>
                 <dt>職能</dt><dd>${esc(t.role)}</dd>
-                <dt>預估時間</dt><dd>${t.hours} 小時</dd>
-                <dt>難度</dt><dd>L${t.level} 見習工單</dd>
-                <dt>獎勵</dt><dd>+${H.xpFor(t)} XP・工單履歷</dd>
-                <dt>已完成</dt><dd>${t.done.toLocaleString()} 人（示範）</dd>
+                <dt>${L2 ? '時間限制' : '預估時間'}</dt><dd>${L2 ? '限時' : ''} ${t.hours} 小時</dd>
+                <dt>難度</dt><dd>${L2 ? 'L2 企業挑戰' : `L${t.level} 見習工單`}</dd>
+                <dt>獎勵</dt><dd>${L2 ? '完成可得參與津貼（示範）・表現好直接獲面試邀約' : `+${H.xpFor(t)} XP・工單履歷`}</dd>
+                <dt>${L2 ? '開放時間' : '已完成'}</dt><dd>${L2 ? '第三階段（117 年第 3 季起）' : `${t.done.toLocaleString()} 人（示範）`}</dd>
               </dl>
               <div class="mt16">${cta}</div>
             </div>
@@ -210,7 +211,7 @@
       }
     };
   };
-  function P(name) { const map = { spark: 'gem', bolt: 'bolt', mic: 'bubble', shield: 'shield' }; return px.sprite(map[name] || 'star', { size: 18 }); }
+  function P(name) { const map = { spark: 'gem', bolt: 'bolt', mic: 'bubble', shield: 'shield', clock: 'coin', scroll: 'scroll' }; return px.sprite(map[name] || 'star', { size: 18 }); }
 
   /* ======================================================== 學習成效榜 */
   V.learn = () => {
@@ -279,7 +280,7 @@
         <p><b>AI 不是一下就能抓到錯誤嗎？</b><br>每張工單上架前會先用主流 AI 實測，AI 自己能發現的錯誤不計分；計分的錯誤必須跨文件比對、或依主管給的情境判斷才看得出來。</p>
         <p><b>沒有自主學習習慣的人會參加嗎？</b><br>這正是遊戲化與戰隊機制的目的；另建議與臺北市立大學等學校合作，把工單融入課程作業。</p>
       </div>
-      <div class="row mt24"><a class="px-btn" href="#/tasks">進入公會大廳 ${icon('arrowRight')}</a><a class="btn btn-ghost" href="#/gov">${icon('chart')}看市府儀表板</a></div>
+      <div class="row mt24"><a class="px-btn" href="#/tasks">進入公會大廳 ${icon('arrowRight')}</a><a class="btn btn-ghost" href="#/gov">${icon('chart')}看成效追蹤</a></div>
     </div>`
   });
 

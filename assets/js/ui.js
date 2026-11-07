@@ -61,7 +61,8 @@
   function heading(text) {
     const phrases = {
       '青年市集報名數據分析與下季推廣預算建議': ['青年市集', '報名數據分析', '與下季', '推廣預算建議'],
-      '咖啡品牌會員回購率下滑診斷': ['咖啡品牌', '會員回購率', '下滑診斷'],
+      '記帳 App 付費會員續訂率下滑診斷': ['記帳 App 付費會員', '續訂率下滑診斷'],
+      '企業挑戰｜免費試聽轉付費為什麼掉了？': ['企業挑戰｜', '免費試聽轉付費', '為什麼掉了？'],
       '物流客訴分類與新人客服 SOP 改善': ['物流客訴分類', '與新人客服', ' SOP 改善']
     };
     return (phrases[text] || [text]).map(t => `<span class="heading-phrase">${esc(t)}</span>`).join('<wbr>');
@@ -158,27 +159,42 @@
     return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
   }
 
-  function radar(values, { size = 300, compare = null, labels = APP.DIMS.map(d => d.n) } = {}) {
+  // 此人＝藍色實線；比較對象（平台平均或第一張工單）＝灰色虛線。
+  function radar(values, { size = 300, compare = null, labels = APP.DIMS.map(d => d.n), selfLabel, compareLabel = '平台平均' } = {}) {
     const W = size + 90, cx = W / 2, cy = size / 2 + 6, R = size / 2 - 52, n = values.length;
+    const self = selfLabel || (compare ? '你' : '分數');
     const pt = (i, v) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * R * v / 100, cy + Math.sin(a) * R * v / 100]; };
     let g = '';
     [25, 50, 75, 100].forEach(v => { g += `<polygon points="${labels.map((_, i) => pt(i, v).join(',')).join(' ')}" fill="none" stroke="var(--grid)" stroke-width="1"/>`; });
     labels.forEach((_, i) => { const [x, y] = pt(i, 100); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`; });
-    const poly = (vals, color, name) => {
-      const pts = vals.map((v, i) => pt(i, v));
-      return `<polygon points="${pts.map(p => p.join(',')).join(' ')}" fill="${color}" fill-opacity=".1" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` +
-        pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${color}" stroke="var(--card)" stroke-width="2" data-tip="${esc(name)}・${esc(labels[i])}：${vals[i]}"/><circle cx="${p[0]}" cy="${p[1]}" r="12" fill="transparent" data-tip="${esc(name)}・${esc(labels[i])}：${vals[i]}"/>`).join('');
-    };
-    if (compare) g += poly(compare, 'var(--series-2)', '平台平均');
-    g += poly(values, 'var(--series-1)', compare ? '你' : '分數');
+    const dots = (pts, vals, color, name) => pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${color}" stroke="var(--card)" stroke-width="2" data-tip="${esc(name)}・${esc(labels[i])}：${vals[i]}"/><circle cx="${p[0]}" cy="${p[1]}" r="12" fill="transparent" data-tip="${esc(name)}・${esc(labels[i])}：${vals[i]}"/>`).join('');
+    if (compare) {
+      const pts = compare.map((v, i) => pt(i, v));
+      g += `<polygon class="radar-base" points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="var(--radar-base)" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round"/>` + dots(pts, compare, 'var(--radar-base)', compareLabel);
+    }
+    const sp = values.map((v, i) => pt(i, v));
+    g += `<polygon class="radar-self" points="${sp.map(p => p.join(',')).join(' ')}" fill="var(--radar-self)" fill-opacity=".14" stroke="var(--radar-self)" stroke-width="2.5" stroke-linejoin="round"/>` + dots(sp, values, 'var(--radar-self)', self);
     labels.forEach((l, i) => {
       const [x, y] = pt(i, 122);
       const anchor = Math.abs(x - cx) < 8 ? 'middle' : x > cx ? 'start' : 'end';
       g += `<text x="${x}" y="${y + 4}" text-anchor="${anchor}" font-size="12.5" font-weight="600" fill="var(--ink-2)">${esc(l)}</text>`;
       g += `<text x="${x}" y="${y + 20}" text-anchor="${anchor}" font-size="12" fill="var(--muted)" class="tnum">${values[i]}</text>`;
     });
-    const leg = compare ? `<div class="legend" style="justify-content:center"><span><i style="background:var(--series-1)"></i>你</span><span><i style="background:var(--series-2)"></i>平台平均</span></div>` : '';
-    return `<div class="chart-box"><svg viewBox="0 0 ${W} ${size + 12}" role="img" aria-label="五力雷達圖：${labels.map((l, i) => l + ' ' + values[i]).join('、')}">${g}</svg><div class="tip"></div>${leg}</div>`;
+    const leg = compare ? `<div class="legend radar-legend"><span><i class="lg-self"></i>${esc(self)}</span><span><i class="lg-base"></i>${esc(compareLabel)}</span></div>` : '';
+    return `<div class="chart-box"><svg viewBox="0 0 ${W} ${size + 12}" role="img" aria-label="五力雷達圖：${esc(self)} ${labels.map((l, i) => l + ' ' + values[i]).join('、')}${compare ? `；${esc(compareLabel)} ${labels.map((l, i) => l + ' ' + compare[i]).join('、')}` : ''}">${g}</svg><div class="tip"></div>${leg}</div>`;
+  }
+
+  // 五力長條；有比較對象時，旁邊寫「比平均 +12」。
+  function dimBars(values, { base = null, baseLabel = '平均' } = {}) {
+    return `<div class="dim-compare">${APP.DIMS.map((d, i) => {
+      const diff = base ? values[i] - base[i] : 0;
+      return `<div class="dc-row"><span class="dc-name">${esc(d.n)}</span><div class="dc-track"><i style="width:${values[i]}%"></i>${base ? `<b class="dc-base" style="left:${base[i]}%" aria-hidden="true"></b>` : ''}</div><b class="dc-val tnum">${values[i]}</b>${base ? `<span class="dc-diff ${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">比${esc(baseLabel)} <span class="tnum">${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}</span></span>` : ''}</div>`;
+    }).join('')}</div>`;
+  }
+
+  // 給企業看的五力：雷達圖在上，長條在下；平台平均是示範常數。
+  function dimsBlock(values, { base = APP.PLATFORM_AVG } = {}) {
+    return `<div class="dims-block" data-dims-block>${radar(values, { compare: base, selfLabel: '此人', compareLabel: '平台平均（示範）' })}${dimBars(values, { base, baseLabel: '平均' })}<p class="try-note">灰色虛線是平台平均，為示範常數，不是統計結果。</p></div>`;
   }
 
   function columns(data, { h = 220, unit = '' } = {}) {
@@ -242,5 +258,5 @@
   const verifyURL = (vid, online = false) => (online || location.protocol === 'file:' ? 'https://a96020183.github.io/shadow-task/' : location.href.split('#')[0]) + '#/verify/' + encodeURIComponent(vid);
 
   const verifyNotice = () => '<div class="verify-notice"><p class="verify-state">示範查驗頁・非市府核發</p><p>正式版將由臺北市政府青年局核發</p></div>';
-  APP.ui = { heading, verifyNotice, qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, columns, hbars, mountTips };
+  APP.ui = { heading, verifyNotice, qrSVG, verifyURL, esc, nl, len, clamp, $, $$, icon, LOGO, toast, modal, fmtClock, fmtDur, fmtDate, fmtTime, hash, level, fingerprint, radar, dimBars, dimsBlock, columns, hbars, mountTips };
 })();
