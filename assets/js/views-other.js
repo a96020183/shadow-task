@@ -24,7 +24,7 @@
     const done = Object.values(byId).sort((x, y) => y.a.result.at - x.a.result.at);
     return {
       id: 'me', own: true, name: s.user.name || '我', who: s.user.who || '', school: s.user.school || '', verified: !!s.user.schoolVerified,
-      blind: s.user.blind !== false, visible: s.user.visible !== false, xp: s.xp,
+      blind: true, visible: s.user.visible !== false, xp: s.xp,
       dims: avgDims(done.map(d => d.a.result.dims)),
       badges: [...new Set(done.flatMap(d => d.a.result.badges))],
       lead: (s.referrals || []).filter(r => r.status === 'passed').length, tips: (s.tips || []).length,
@@ -50,7 +50,7 @@
     const hours = p.entries.reduce((s, e) => s + e.dur, 0);
     const lv = level(p.xp);
     const schoolLine = p.own
-      ? (p.school ? `${p.blind ? icon('eyeOff', 'sr-only') : ''}${esc(p.school)}${p.verified ? ' <span class="tag tag-ok">' + icon('check') + '學校信箱已驗證</span>' : ''}${p.blind ? ' <span class="tag">對企業隱藏</span>' : ''}` : '')
+      ? (p.school ? `${esc(p.school)}${p.verified ? ' <span class="tag tag-ok">' + icon('check') + '學校信箱已驗證</span>' : ''} <span class="tag">${icon('eyeOff')}企業看不到學校</span>` : '')
       : `<span class="tag">${icon('eyeOff')}盲審模式：學校已隱藏</span>`;
     return `
       <div class="card card-pad">
@@ -69,9 +69,7 @@
           ${p.own ? `<div class="stack no-print" style="--gap:8px">
             <a class="btn btn-primary btn-sm" href="#/onepage">${icon('doc')}一頁式工單履歷（可附在求職網站的履歷）</a>
             <button class="btn btn-ghost btn-sm" data-copy>${icon('link')}複製驗證碼</button>
-            <label class="check" style="font-size:13px;padding:8px 10px"><input class="styled-switch" role="switch" type="checkbox" data-vis ${p.visible ? 'checked' : ''}>企業可搜尋到我</label>
-            <label class="check" style="font-size:13px;padding:8px 10px"><input class="styled-switch" role="switch" type="checkbox" data-blind ${p.blind ? 'checked' : ''}>盲審：對企業隱藏學校</label>
-          </div>` : `<div class="stack no-print" style="--gap:8px"><button class="btn btn-primary" data-invite="${p.id}">${icon('send')}邀請面試</button><a class="btn btn-ghost btn-sm" href="#/company">${icon('arrowLeft')}回人才搜尋</a></div>`}
+            <label class="check" style="font-size:13px;padding:8px 10px"><input class="styled-switch" role="switch" type="checkbox" data-vis ${p.visible ? 'checked' : ''}>企業可搜尋到我</label>          </div>` : `<div class="stack no-print" style="--gap:8px"><button class="btn btn-primary" data-invite="${p.id}">${icon('send')}邀請面試</button><a class="btn btn-ghost btn-sm" href="#/company">${icon('arrowLeft')}回人才搜尋</a></div>`}
         </div>
       </div>
       <section class="card card-pad mt24 dims-card"><div class="row-between"><h3 style="font-size:17px">五力：此人和平台平均比</h3><span class="faint">${p.entries.length} 張工單平均</span></div>${APP.ui.dimsBlock(p.dims)}</section>
@@ -119,9 +117,7 @@
           }
         });
         root.addEventListener('change', e => {
-          if (e.target.dataset.vis !== undefined) { s.user.visible = e.target.checked; APP.store.save(); toast(e.target.checked ? '企業可以搜尋到你' : '已對企業隱藏', 'info'); }
-          if (e.target.dataset.blind !== undefined) { s.user.blind = e.target.checked; APP.store.save(); APP.render(); }
-          if (e.target.dataset.pub) { s.pubHidden = s.pubHidden || {}; s.pubHidden[e.target.dataset.pub] = !e.target.checked; APP.store.save(); toast(e.target.checked ? '這張工單會出現在企業端' : '這張工單已對企業隱藏', 'info'); }
+          if (e.target.dataset.vis !== undefined) { s.user.visible = e.target.checked; APP.store.save(); toast(e.target.checked ? '企業可以搜尋到你' : '已對企業隱藏', 'info'); }          if (e.target.dataset.pub) { s.pubHidden = s.pubHidden || {}; s.pubHidden[e.target.dataset.pub] = !e.target.checked; APP.store.save(); toast(e.target.checked ? '這張工單會出現在企業端' : '這張工單已對企業隱藏', 'info'); }
         });
       }
     };
