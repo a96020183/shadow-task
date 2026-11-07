@@ -10,6 +10,21 @@
   const hms = ms => { const t = Math.max(0, Math.floor(ms / 1000)); return [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(n => String(n).padStart(2, '0')).join(':'); };
   // 原型：一鍵填入範例作答（錄影與評審試用），抓錯仍要自己標記。
   const fillBtn = t => t.sample ? `<button type="button" class="btn btn-text btn-sm fill-btn" data-fill>${icon('spark')}原型：填入範例作答</button>` : '';
+  // AI 回答分行：開頭一句、每個數字一行、結論自成一行。「標籤：數值」的行排成清單。
+  const aiBody = text => {
+    const lines = text.split('\n');
+    let out = '', list = [];
+    const flush = () => { if (list.length) { out += `<ul class="ai-list">${list.join('')}</ul>`; list = []; } };
+    lines.forEach((line, i) => {
+      const m = i > 0 && line.match(/^([^：]{1,14})：(.+)$/);
+      if (m) { list.push(`<li class="${m[2].length > 18 ? 'long' : ''}"><span>${esc(m[1])}</span><b>${esc(m[2])}</b></li>`); return; }
+      flush();
+      if (line.trim()) out += `<p>${esc(line)}</p>`;
+    });
+    flush();
+    return out;
+  };
+  const stepperHTML = a => `<ol class="stepper" aria-label="工作步驟">${STEPS.map((n, i) => `<li class="st ${i + 1 < a.step ? 'done' : ''} ${i + 1 === a.step ? 'cur' : ''}" ${i + 1 === a.step ? 'aria-current="step"' : ''} ${i + 1 < a.step ? `data-goto="${i + 1}" role="button" tabindex="0" aria-label="回到${n}"` : ''}><i>${i + 1 < a.step ? '✓' : i + 1}</i><span class="st-n">${n}</span></li>`).join('')}</ol>`;
   const peerQ = (t, a) => Object.values(a.flags || {}).some(Boolean) ? '你說資料裡有錯，你是怎麼發現的？換成我，可能就照 AI 的數字用了。' : '你最重要的那個決定，為什麼這樣做？如果主管反對，你會拿哪個數字回他？';
 
   function flagLabel(task, key) {
@@ -38,7 +53,7 @@
     let timers = [];
     const save = () => APP.store.save();
     let saveT;
-    const autosave = () => { clearTimeout(saveT); saveT = setTimeout(() => { save(); const s = $('[data-saved]'); if (s) { s.textContent = '已自動儲存 ' + fmtTime(Date.now()); } }, 350); };
+    const autosave = () => { clearTimeout(saveT); saveT = setTimeout(() => { save(); const s = $('[data-saved]'); if (s) { s.textContent = '已儲存 ' + fmtTime(Date.now()); } }, 350); };
 
     /* ---------- 左：資料面板 ---------- */
     function mails() {
@@ -60,43 +75,43 @@
     }
     function chat() {
       const asked = a.aiLog.map(l => l.id);
-      const bubbles = a.aiLog.map(l => { const x = t.ai.find(q => q.id === l.id); const k = 'ai:' + x.id; return `<div class="bubble q">${esc(x.q)}</div><div class="bubble a ${a.flags[k] ? 'on' : ''}">${nl(x.a)}<div class="bmeta"><span>模擬 AI・${fmtTime(l.at)}</span><button class="bflag ${a.flags[k] ? 'on' : ''}" data-flag="${k}" aria-pressed="${!!a.flags[k]}">${icon('flag')}${a.flags[k] ? '已標記可疑' : '標記可疑'}</button></div></div>`; }).join('');
+      const bubbles = a.aiLog.map(l => { const x = t.ai.find(q => q.id === l.id); const k = 'ai:' + x.id; return `<div class="bubble q">${esc(x.q)}</div><div class="bubble a ${a.flags[k] ? 'on' : ''}"><div class="ai-body">${aiBody(x.a)}</div><div class="bmeta"><span>模擬 AI・${fmtTime(l.at)}</span><button class="bflag ${a.flags[k] ? 'on' : ''}" data-flag="${k}" aria-pressed="${!!a.flags[k]}">${icon('flag')}${a.flags[k] ? '已標記可疑' : '標記可疑'}</button></div></div>`; }).join('');
       const left = t.ai.filter(q => !asked.includes(q.id));
-      return `<div class="ai-head">${icon('info')}<span>模擬 AI 助手：回答<b>可能有錯</b>，請自行驗證。正式版串接市府授權的 AI 服務，並保留對話紀錄供答辯參考。</span></div>
-        <div class="chat">${bubbles || '<p class="faint center" style="font-size:13px;padding:20px 0">點下方的問題開始對話</p>'}</div>
+      return `<div class="chat">${bubbles || '<p class="faint center" style="padding:12px 0">點下方的問題開始對話</p>'}</div>
         ${left.length ? `<div class="prompt-chips">${left.map(q => `<button class="chip" data-ask="${q.id}">${icon('spark')}${esc(q.q)}</button>`).join('')}</div>` : ''}`;
     }
     const flagCount = () => Object.values(a.flags).filter(Boolean).length;
     function panel() {
       const tabs = [['mail', 'mail', `信件${a.changeAt && !a.changeSeen ? ' <span class="dot"></span>' : ''}`], ['table', 'table', '資料表'], ['doc', 'doc', '文件'], ['ai', 'spark', 'AI 助手']];
-      const body = tab === 'mail' ? mails() : tab === 'table' ? `<p class="faint" style="font-size:12.5px">點列首的 ⚑ 標記你認為有問題的資料。</p>${tables()}` : tab === 'doc' ? `<p class="faint" style="font-size:12.5px">點虛線文字，可標記為可疑的陳述。</p>${docs()}` : chat();
-      return `<div class="panel panel-sticky"><div class="panel-tabs" role="tablist">${tabs.map(([k, ic, n]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-tab="${k}">${icon(ic)}${n}</button>`).join('')}<span style="margin-left:auto;align-self:center;font-size:12px;color:var(--muted);padding-right:8px;white-space:nowrap">已標記 <b data-fc>${flagCount()}</b> 處</span></div><div class="panel-body">${body}</div></div>`;
+      const hint = { mail: '主管的交辦與回信', table: '點列首旗子，標記有問題的資料', doc: '點虛線文字，標記可疑的說法', ai: '模擬 AI，回答可能有錯' }[tab];
+      const body = tab === 'mail' ? mails() : tab === 'table' ? tables() : tab === 'doc' ? docs() : chat();
+      return `<div class="panel panel-sticky"><div class="panel-tabs" role="tablist">${tabs.map(([k, ic, n]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-tab="${k}">${icon(ic)}${n}</button>`).join('')}</div><div class="panel-hint"><span>${hint}</span><span class="flag-count">已標記 <b data-fc>${flagCount()}</b> 處</span></div><div class="panel-body">${body}</div></div>`;
     }
 
     /* ---------- 右：步驟 ---------- */
     function stepForm() {
       const s = a.step;
       if (s === 1) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 01・理解需求</div><h2 class="mt8" style="font-size:20px">先別急著做，確認你真的懂要做什麼。</h2>${fillBtn(t)}
+        <h2 class="step-h">先別急著做，確認你真的懂要做什麼。</h2>${fillBtn(t)}
         <label class="field mt16"><span>用你自己的話重述這個任務<em>1–3 句</em></span><textarea class="textarea" data-bind="understanding.restate" placeholder="例：要在什麼限制下，交出什麼，給誰看…">${esc(a.understanding.restate)}</textarea></label>
         <label class="field mt16"><span>開工前，你想向主管確認哪些問題？<em>一行一題</em></span><textarea class="textarea" data-bind="understanding.questions" ${a.clarified ? 'readonly' : ''} placeholder="例：預算有沒有彈性？報告要給誰看？">${esc(a.understanding.questions)}</textarea></label>
         ${a.clarified ? `<div class="callout ok mt12">${icon('check')}<div>主管已回覆你的問題，請到資料區的「信件」查看。</div></div>` : `<button class="btn btn-ghost mt12" data-clarify>${icon('send')}送出確認問題給主管</button>`}
         <div class="ws-actions"><span></span><button class="btn btn-primary" data-next>下一步：拆解計畫 ${icon('arrowRight')}</button></div></div>`;
       if (s === 2) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 02・拆解計畫</div><h2 class="mt8" style="font-size:20px">把任務拆成可以檢查的步驟。</h2>${fillBtn(t)}
+        <h2 class="step-h">把任務拆成可以檢查的步驟。</h2>${fillBtn(t)}
         <p class="muted mt8" style="font-size:13.5px">勾選你打算交給 AI 做的步驟。好的計畫會留一步給「驗證」。</p>
         <div class="plan-list mt16">${a.plan.map((p, i) => `<div class="plan-item"><span class="n">${i + 1}</span><input class="input" data-plan="${i}" value="${esc(p.t)}" placeholder="步驟 ${i + 1}"><label><input type="checkbox" data-planai="${i}" ${p.ai ? 'checked' : ''}>用 AI</label><button class="flag-btn" data-del="${i}" aria-label="刪除步驟">${icon('trash')}</button></div>`).join('')}</div>
         ${a.plan.length < 8 ? `<button class="btn btn-text mt8" data-add>${icon('plus')}新增步驟</button>` : ''}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：開始實作 ${icon('arrowRight')}</button></div></div>`;
       if (s === 3) return `<div class="card card-pad">
-        <div class="eyebrow">STEP 03・實作產出</div><h2 class="mt8" style="font-size:20px">查過資料，再完成你的成果。</h2>${fillBtn(t)}
-        ${a.changeAt ? `<div class="callout bad mt12">${px.sprite('bolt', { size: 18 })}<div><b>需求已變更：</b>${esc(t.change.subject.replace(/【.*?】/, ''))}。請把成果調整成新版本。</div></div>` : `<div class="callout info mt12">${icon('info')}<div>發現可疑的資料或 AI 回答，記得在資料區標記 ⚑。</div></div>`}
+        <h2 class="step-h">查過資料，再完成你的成果。</h2>${fillBtn(t)}
+        ${a.changeAt ? `<div class="callout bad mt12">${px.sprite('bolt', { size: 18 })}<div><b>需求已變更：</b>${esc(t.change.subject.replace(/【.*?】/, ''))}。請把成果調整成新版本。</div></div>` : `<p class="step-tip mt8">看到可疑的資料或 AI 回答，就在上方資料區標記。</p>`}
         ${t.deliverables.map(d => `<label class="field deliv mt16"><span>${esc(d.label)}</span><textarea class="textarea" style="min-height:130px" data-ans="${d.id}" placeholder="${esc(d.hint)}">${esc(a.answers[d.id] || '')}</textarea><div class="hint"><span>${esc(d.hint)}</span><span data-cnt="${d.id}">${cnt(d)}</span></div></label>`).join('')}
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：驗證修正 ${icon('arrowRight')}</button></div></div>`;
       if (s === 4) {
         const flagged = Object.keys(a.flags).filter(k => a.flags[k]);
         return `<div class="card card-pad">
-        <div class="eyebrow">STEP 04・驗證修正</div><h2 class="mt8" style="font-size:20px">交出去之前，再檢查一次。</h2>${fillBtn(t)}
+        <h2 class="step-h">交出去之前，再檢查一次。</h2>${fillBtn(t)}
         <div class="mt16"><b style="font-size:14px">你標記的可疑之處（${flagged.length}）</b>
           <div class="flag-summary mt8">${flagged.length ? flagged.map(k => `<div class="fs">${icon('flag')}<span style="flex:1">${esc(flagLabel(t, k))}</span><button class="btn btn-text btn-sm" data-unflag="${k}">取消</button></div>`).join('') : '<div class="callout warn">' + icon('alert') + '<div>你還沒有標記任何可疑之處。確定資料、文件和 AI 的回答都沒問題嗎？</div></div>'}</div></div>
         <label class="field mt16"><span>你怎麼驗證關鍵數字？</span><textarea class="textarea" data-bind="review.verify" placeholder="例：用試算表重算各管道成本，和 AI 的結果比對…">${esc(a.review.verify)}</textarea></label>
@@ -108,7 +123,7 @@
         <div class="ws-actions"><button class="btn btn-text" data-prev>${icon('arrowLeft')}上一步</button><button class="btn btn-primary" data-next>下一步：確認送出 ${icon('arrowRight')}</button></div></div>`;
       }
       return `<div class="card card-pad">
-        <div class="eyebrow">STEP 05・送出答辯</div><h2 class="mt8" style="font-size:20px">成果確認</h2>
+        <h2 class="step-h">成果確認</h2>
         <div class="mt16 stack" style="--gap:12px">${t.deliverables.map(d => `<div class="mail"><div class="mail-subj">${esc(d.label)}</div><div style="font-size:13.5px">${nl(a.answers[d.id] || '')}</div></div>`).join('')}</div>
         <div class="grid g3 mt16" style="gap:10px">
           <div class="card kpi" style="box-shadow:none"><div class="label">標記可疑</div><div class="value">${flagCount()}</div></div>
@@ -143,13 +158,13 @@
       return a.timerSkipped ? '示範：已跳過計時' : '剩 ' + hms(L2_LIMIT - (Date.now() - a.startedAt));
     }
     function html() {
-      return `<div class="wrap page" style="padding-top:24px">
-        <div class="ws-head">
-          <div><div class="row" style="gap:8px"><a class="btn btn-text btn-sm" href="#/task/${t.id}">${icon('arrowLeft')}工單說明</a><span class="ticket-id">${t.code}</span>${H.orgTag(t)}${a.practice ? '<span class="tag tag-warn">練習模式</span>' : ''}</div><h1 class="mt8">${APP.ui.heading(t.title)}</h1></div>
-          <div class="row"><span class="faint" style="font-size:12px" data-saved>已自動儲存</span>${t.level === 2 ? `<span class="timer l2-timer" data-countdown>${icon('clock')}<span data-clock>${clockText()}</span></span>${a.timerSkipped ? '' : '<button class="btn btn-text btn-sm" data-skip-timer>示範：跳過計時</button>'}` : `<span class="timer">${icon('clock')}<span data-clock>${fmtClock(Date.now() - a.startedAt)}</span></span>`}<button class="btn btn-text btn-sm" data-abandon>放棄重來</button></div>
-        </div>
-        ${t.level === 2 ? `<p class="stage-note">L2 為第三階段規劃，此為示範。限 3 小時・完成可得參與津貼（示範）・成果不得商用</p>` : ''}
-        <div class="stepper" role="list">${STEPS.map((n, i) => `<div role="listitem" class="st ${i + 1 < a.step ? 'done' : ''} ${i + 1 === a.step ? 'cur' : ''}" ${i + 1 < a.step ? `data-goto="${i + 1}"` : ''}><i>${i + 1 < a.step ? '✓' : i + 1}</i>${n}</div>`).join('')}</div>
+      return `<div class="wrap page ws-page">
+        <header class="ws-head">
+          <div class="ws-meta"><a class="ws-back" href="#/task/${t.id}" aria-label="回工單說明">${icon('arrowLeft')}</a><span class="ticket-id">${t.code}</span><span class="ws-org">${esc(APP.ORG_TYPES[t.orgType])}</span>${a.practice ? '<span class="ws-org">練習模式</span>' : ''}<span class="ws-saved" data-saved>已自動儲存</span></div>
+          <h1>${APP.ui.heading(t.title)}</h1>
+          <div class="ws-status">${t.level === 2 ? `<span class="timer l2-timer" data-countdown>${icon('clock')}<span data-clock>${clockText()}</span></span>${a.timerSkipped ? '' : '<button class="ws-link" data-skip-timer>跳過計時</button>'}` : `<span class="timer">${icon('clock')}<span data-clock>${fmtClock(Date.now() - a.startedAt)}</span></span>`}<button class="ws-link ws-abandon" data-abandon>放棄重來</button></div>
+        </header>
+        ${stepperHTML(a)}
         <div class="ws-grid"><div data-panel>${panel()}</div><div data-form>${stepForm()}</div></div>
       </div>`;
     }
@@ -162,8 +177,8 @@
       modal({
         title: '突發事件', dismissible: false,
         body: `<div class="px-event-h" style="margin:-16px -24px 16px">${px.sprite('bolt', { size: 44, cls: 'bolt-in' })}<div><div class="px px-33">突發事件！</div><small>${esc(t.boss.name)}（${esc(t.boss.title)}）剛剛來信</small></div></div>
-          <div class="mail urgent"><div class="mail-subj">${esc(t.change.subject)}</div><div>${nl(t.change.body)}</div></div>
-          <p class="muted mt12" style="font-size:13px">真實職場中，需求常常做到一半就改。調整的速度和品質，也是評分的一部分。</p>`,
+          <div class="change-msg"><div class="mail-subj">${esc(t.change.subject)}</div><div>${nl(t.change.body)}</div></div>
+          <p class="change-note">做到一半改需求，職場很常見。怎麼調整，也算分。</p>`,
         actions: [{ label: '收到，我會調整', cls: 'btn-primary', onClick: c => { a.changeSeen = true; save(); c(); rerender(root); } }],
         onOpen(bg) { bg.querySelector('.modal').classList.add('px-modal'); }
       });
@@ -172,7 +187,7 @@
     function rerender(root) {
       $('[data-panel]', root).innerHTML = panel();
       $('[data-form]', root).innerHTML = stepForm();
-      APP.ui.$$('.stepper', root)[0].outerHTML = `<div class="stepper" role="list">${STEPS.map((n, i) => `<div role="listitem" class="st ${i + 1 < a.step ? 'done' : ''} ${i + 1 === a.step ? 'cur' : ''}" ${i + 1 < a.step ? `data-goto="${i + 1}"` : ''}><i>${i + 1 < a.step ? '✓' : i + 1}</i>${n}</div>`).join('')}</div>`;
+      APP.ui.$$('.stepper', root)[0].outerHTML = stepperHTML(a);
       a._newChange = false;
       armChange(root);
     }
@@ -211,7 +226,6 @@
             if (d.unflag) { $('[data-form]', root).innerHTML = stepForm(); }
             $('[data-panel]', root).innerHTML = panel();
             refocus(`[data-flag="${k}"]`);
-            toast(a.flags[k] ? '已標記為可疑' : '已取消標記', a.flags[k] ? 'warn' : 'info', 1100);
             return;
           }
           if (d.ask) { a.aiLog.push({ id: d.ask, at: Date.now() }); APP.store.log(a, 'ai', '詢問 AI：' + t.ai.find(q => q.id === d.ask).q); save(); $('[data-panel]', root).innerHTML = panel(); const b = $('.panel-body', root); b.scrollTop = b.scrollHeight; return; }
@@ -238,7 +252,7 @@
           if ('submit' in d) { a.step = 6; APP.store.log(a, 'submit', '送出成果，進入答辯'); save(); location.replace('#/defense/' + t.id); return; }
           if ('abandon' in d) modal({ title: '放棄這張工單？', body: '<p>作答內容會清除，可以重新接單。</p>', actions: [{ label: '繼續作答' }, { label: '放棄重來', cls: 'btn-primary', onClick: c => { c(); APP.store.resetAttempt(t.id); location.replace('#/task/' + t.id); } }] });
         });
-        root.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('claim')) { e.preventDefault(); e.target.click(); } });
+        root.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && (e.target.classList.contains('claim') || e.target.matches('.stepper [data-goto]'))) { e.preventDefault(); e.target.click(); } });
         root.addEventListener('input', e => {
           const el = e.target, d = el.dataset;
           if (d.bind) { const [o, k] = d.bind.split('.'); a[o][k] = el.value; }
@@ -287,17 +301,22 @@
     let iv;
     const html = () => {
       const i = D.idx;
-      return `<div class="wrap wrap-narrow page">
-        ${t.level === 2 ? '<p class="stage-note">L2 為第三階段規劃，此為示範</p>' : ''}
-        <div class="row-between"><div><div class="eyebrow">${t.code}・成果答辯</div><h1 class="mt8" style="font-size:22px">${APP.ui.heading(t.title)}</h1></div><div class="dots">${D.qs.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>
-        <div class="examiner mt24"><div class="avatar">職</div><div><b>職人答辯官・王經理</b>（模擬）<div class="faint" style="font-size:12.5px">原型以文字作答。正式版為 15 分鐘視訊答辯，由資深與退休職人依你的成果追問。</div></div></div>
-        <div class="card card-pad mt16">
-          <div class="def-meta"><span class="eyebrow">第 ${i + 1} 題 / 共 ${D.qs.length} 題</span><div class="ring" data-ring><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--paper-2)" stroke-width="6"/><circle data-arc cx="32" cy="32" r="27" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="0"/></svg><span data-left>3:00</span></div></div>
-          <div class="def-q">${esc(D.qs[i])}</div>
-          <textarea class="textarea" style="min-height:170px" data-def placeholder="說明你的判斷依據。引用具體數字會更有說服力。">${esc(D.answers[i])}</textarea>
-          <div class="hint"><span>建議 3 分鐘內作答；超時不扣分，只會記錄。</span><span data-dc>${len(D.answers[i])} 字</span></div>
-          ${fillBtn(t)}
-          <div class="ws-actions"><span></span><button class="${i === D.qs.length - 1 ? 'px-btn' : 'btn btn-primary'}" data-dnext>${i === D.qs.length - 1 ? '完成答辯，查看結果 ' + icon('arrowRight') : '下一題 ' + icon('arrowRight')}</button></div>
+      return `<div class="wrap wrap-narrow page def-page">
+        <header class="ws-head">
+          <div class="ws-meta"><span class="ticket-id">${t.code}</span><span class="ws-org">成果答辯</span></div>
+          <h1>${APP.ui.heading(t.title)}</h1>
+          <p class="def-proto">原型用文字作答。正式版是 15 分鐘視訊答辯。</p>
+        </header>
+        <div class="def-bar"><span class="def-count">第 <b class="tnum">${i + 1}</b> 題，共 ${D.qs.length} 題</span><span class="dots" aria-hidden="true">${D.qs.map((_, k) => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</span><div class="ring" data-ring role="timer" aria-label="建議作答時間"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--paper-2)" stroke-width="6"/><circle data-arc cx="32" cy="32" r="27" fill="none" stroke="var(--ink)" stroke-width="6" stroke-dasharray="169.6" stroke-dashoffset="0"/></svg><span data-left>3:00</span></div></div>
+        <div class="def-thread">
+          <div class="def-msg"><div class="def-avatar" aria-hidden="true">王</div><div class="def-msg-in"><div class="def-who"><b>王經理</b><span>職人答辯官（模擬）</span></div><p class="def-q">${esc(D.qs[i])}</p></div></div>
+          <div class="def-reply">
+            <label class="def-who def-me" for="def-answer"><b>你的回答</b><span>引用具體數字，更有說服力</span></label>
+            <textarea id="def-answer" class="textarea" data-def placeholder="說明你的判斷依據。">${esc(D.answers[i])}</textarea>
+            <div class="hint"><span>建議 3 分鐘內答完，超時不扣分</span><span data-dc>${len(D.answers[i])} 字</span></div>
+            ${fillBtn(t)}
+            <div class="ws-actions"><span></span><button class="${i === D.qs.length - 1 ? 'px-btn' : 'btn btn-primary'}" data-dnext>${i === D.qs.length - 1 ? '完成答辯，看結果 ' + icon('arrowRight') : '下一題 ' + icon('arrowRight')}</button></div>
+          </div>
         </div>
       </div>`;
     };
@@ -322,7 +341,7 @@
           if (!nb || nb.disabled || a.result) return;
           if (len(D.answers[D.idx]) < 8) { toast('請至少回答一兩句', 'warn'); return; }
           APP.store.log(a, 'answer', `回答第 ${D.idx + 1} 題${D.over[D.idx] ? '（超時）' : ''}`);
-          if (D.idx < D.qs.length - 1) { D.idx++; D.qStart = Date.now(); APP.store.save(); root.innerHTML = html(); tick(root); $('[data-def]', root).focus(); return; }
+          if (D.idx < D.qs.length - 1) { D.idx++; D.qStart = Date.now(); APP.store.save(); root.innerHTML = html(); tick(root); $('[data-def]', root).focus({ preventScroll: true }); return; }
           nb.disabled = true;
           D.endAt = Date.now();
           finish(t, a);
@@ -374,12 +393,10 @@
     const r = a.result, s = APP.store.get();
     const avg = APP.PLATFORM_AVG;
     const company = t.org.replace(/（.*$/, '');
-    const offer = t.level === 2 ? (pass0 => pass0 ? `<section class="offer-card mt24" data-offer><div class="offer-mark">${px.sprite('chest', { size: 40 })}</div><div><h2>${esc(company)}已邀請你面試（示範）</h2><p>你在企業挑戰的表現達到邀約標準。對方同意後，平台才會揭露你的聯絡方式。</p><p class="offer-meta">參與津貼（示範）已核發・成果不得商用・L2 為第三階段規劃，此為示範</p><a class="btn btn-ghost mt12" href="#/gov">${icon('chart')}看市府成效追蹤的邀約數</a></div></section>`
-      : `<section class="offer-card mt24 miss"><div><h2>這次還沒達到邀約標準（示範）</h2><p>參與津貼照樣核發（示範）。看完下方解析，可以再挑戰一次。L2 為第三階段規劃，此為示範。</p></div></section>`)(r.grade !== 'C') : '';
+    const offer = t.level === 2 ? (pass0 => pass0 ? `<section class="offer-card mt24" data-offer><div class="offer-mark">${px.sprite('chest', { size: 40 })}</div><div><h2>${esc(company)}已邀請你面試（示範）</h2><p>你在企業挑戰的表現達到邀約標準。對方同意後，平台才會揭露你的聯絡方式。</p><p class="offer-meta">參與津貼（示範）已核發・成果不得商用</p><a class="btn btn-ghost mt12" href="#/gov">${icon('chart')}看市府成效追蹤的邀約數</a></div></section>`
+      : `<section class="offer-card mt24 miss"><div><h2>這次還沒達到邀約標準（示範）</h2><p>參與津貼照樣核發（示範）。看完下方解析，可以再挑戰一次。</p></div></section>`)(r.grade !== 'C') : '';
     const fb = APP.scoring.feedback(t, r);
-    const stars = [[6, 18], [14, 70], [42, 12], [58, 76], [74, 22], [88, 64]];
     const evCls = { change: 'warn', flag: 'bad', done: 'ok', submit: 'ok', ask: 'ok' };
-    const lv = level(s.xp);
     const showPost = s.anxiety.pre && !s.anxiety.post;
     const tipDone = (s.tips || []).some(x => x.task === id);
     const pass = r.grade !== 'C' && !a.practice;
@@ -387,29 +404,27 @@
       title: '工單完成',
       html: `<div class="wrap page">
         <div class="clear-banner px-edge">${px.skyline()}
-          <div class="float-stars">${stars.map(([x, y], i) => `<span style="left:${x}%;top:${y}%;animation-delay:${i * .25}s">${px.sprite('star', { size: 16 + (i % 3) * 6 })}</span>`).join('')}</div>
           <div class="clear-in">
-            <div><div class="eyebrow" style="color:var(--accent)">${t.code}・QUEST CLEAR</div><h1 class="px px-44 mt8">${a.practice ? '練習完成！' : pass ? (t.level === 2 ? '挑戰完成！' : '工單完成！') : '差一點！'}</h1><p>${esc(t.title)}</p>
-              <div class="row mt16">${r.badges.map(b => `<span title="${esc(APP.BADGES[b].n)}">${px.sprite(APP.px.BADGE_SPRITE[b], { size: 30 })}</span>`).join('')}</div></div>
-            <div class="clear-score"><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? 'var(--teal)' : a.practice ? 'var(--accent)' : 'var(--red)'};margin-bottom:14px">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="num">${r.total}</div><div class="xpg px px-22">+${r.xp} XP${r.levelUp ? ` <span class="lvup">LEVEL UP！</span>` : ''}</div></div>
+            <div class="clear-copy"><div class="clear-code">${t.code}</div><h1 class="px px-44">${a.practice ? '練習完成！' : pass ? (t.level === 2 ? '挑戰完成！' : '工單完成！') : '差一點！'}</h1><p>${esc(t.title)}</p></div>
+            <div class="clear-score"><div class="num tnum">${r.total}<small>分</small></div><span class="stamp stamp-in ${pass ? '' : 'red'}" style="color:${pass ? 'var(--teal)' : a.practice ? 'var(--accent)' : 'var(--red)'}">${a.practice ? '練習' : r.grade === 'C' ? '再挑戰' : '已驗證'}<b>${r.grade} 級</b></span><div class="xpg">+${r.xp} XP${r.levelUp ? ` <span class="lvup">升級！</span>` : ''}</div></div>
           </div>
         </div>
         ${offer}
 
-        <div class="result-hero mt32">
+        <div class="result-hero mt24">
+          <div class="card card-pad result-verify">
+            <h3 style="font-size:17px">${pass ? '已寫入你的工單履歷' : a.practice ? '練習模式：不寫入工單履歷' : '尚未達到核發標準'}</h3>
+            ${pass ? '' : a.practice ? `<div class="callout info mt12">${icon('info')}<div>這次是練習，成績只有你看得到。準備好了，可以用正式模式挑戰同一情境的變體工單。</div></div>` : `<div class="callout warn mt12">${icon('info')}<div>B 級以上才會核發工單履歷。這次的紀錄只有你看得到；看完下方的錯誤解析後，可以挑戰同一情境的變體工單。</div></div>`}
+            ${pass ? `<div class="verify-box mt16"><div class="qr">${APP.ui.fingerprint(r.vid)}</div><div><div class="vb-label">驗證碼</div><div class="vb-code mono">${r.vid}</div><div class="vb-sub">企業用這組碼查核成果與答辯</div></div></div><p class="vb-meta">完成於 ${APP.ui.fmtDate(r.at)}・用時 ${APP.ui.fmtDur(r.duration)}</p>` : `<div class="verify-box mt16"><div><div class="vb-sub">完成於 ${APP.ui.fmtDate(r.at)}・用時 ${APP.ui.fmtDur(r.duration)}</div><div class="vb-sub">${a.practice ? '練習紀錄' : '未達核發標準'}，不核發驗證碼。</div></div></div>`}
+            <div class="row mt16">${pass ? `<a class="btn btn-primary" href="#/portfolio">${icon('doc')}查看工單履歷</a>` : `<button class="btn btn-primary" data-redo>${icon('refresh')}${a.practice ? '正式挑戰變體工單' : '挑戰變體工單'}</button>`}<a class="btn btn-ghost" href="#/tasks">回公會大廳</a></div>
+          </div>
           <div class="card card-pad">
-            <div class="row-between"><h3 style="font-size:17px">五力表現</h3><span class="faint" style="font-size:12.5px">原型：透明規則自動評分｜正式版：AI 初評＋職人複核</span></div>
+            <div class="row-between"><h3 style="font-size:17px">五力表現</h3><span class="faint">原型依透明規則評分</span></div>
             <div class="grid g2 mt16" style="align-items:center">
               <div>${APP.ui.radar(r.dims, { compare: avg })}</div>
               <div>${APP.DIMS.map((d, i) => `<div class="dimbar"><span>${d.n}</span><div class="track"><div class="fill" style="width:${r.dims[i]}%"></div></div><b>${r.dims[i]}</b></div>`).join('')}</div>
             </div>
-          </div>
-          <div class="card card-pad">
-            <h3 style="font-size:17px">${pass ? '已寫入你的工單履歷' : a.practice ? '練習模式：不寫入工單履歷' : '尚未達到核發標準'}</h3>
-            ${pass ? '' : a.practice ? `<div class="callout info mt12">${icon('info')}<div>這次是練習，成績只有你看得到。準備好了，可以用正式模式挑戰同一情境的變體工單。</div></div>` : `<div class="callout warn mt12">${icon('info')}<div>B 級以上才會核發工單履歷。這次的紀錄只有你看得到；看完下方的錯誤解析後，可以挑戰同一情境的變體工單。</div></div>`}
-            ${pass ? `<div class="verify-box mt16"><div class="qr">${APP.ui.fingerprint(r.vid)}</div><div><div class="mono" style="font-weight:700">${r.vid}</div><div class="faint" style="font-size:12.5px">完成於 ${APP.ui.fmtDate(r.at)}・用時 ${APP.ui.fmtDur(r.duration)}</div><div class="faint" style="font-size:12.5px">企業可用驗證碼查核成果與答辯紀錄</div></div></div>` : `<div class="verify-box mt16"><div><div class="faint" style="font-size:12.5px">完成於 ${APP.ui.fmtDate(r.at)}・用時 ${APP.ui.fmtDur(r.duration)}</div><div class="faint" style="font-size:12.5px">${a.practice ? '練習紀錄' : '未達核發標準'}，不核發驗證碼。</div></div></div>`}
-            <div class="mt16"><div class="row-between" style="font-size:13px"><b>LV.${lv.lv} ${esc(lv.n)}</b><span class="mono faint">${s.xp}${lv.next ? ' / ' + lv.next : ''} XP</span></div><div class="mt8">${px.xpBar(lv.pct, 24).replace('px-xp', 'px-xp light')}</div></div>
-            <div class="row mt24">${pass ? `<a class="btn btn-primary" href="#/portfolio">${icon('doc')}查看工單履歷</a>` : `<button class="btn btn-primary" data-redo>${icon('refresh')}${a.practice ? '正式挑戰變體工單' : '挑戰變體工單'}</button>`}<a class="btn btn-ghost" href="#/tasks">回公會大廳</a></div>
+            <p class="try-note mt8">正式版由 AI 初評，再由職人複核。</p>
           </div>
         </div>
 
@@ -433,8 +448,8 @@
           </div>
           <div class="stack" style="--gap:24px">
             <div class="card card-pad"><h3 style="font-size:17px">職人答辯官回饋</h3><div class="mt16">${fb.map(f => `<div class="feedback"><b>${f.k}</b><p>${esc(f.t)}</p></div>`).join('')}</div></div>
-            <div class="card card-pad"><h3 style="font-size:17px">過程紀錄</h3><p class="faint mt8" style="font-size:12.5px">完整保留作答歷程，是防代做的證據之一。</p>
-              <div class="timeline mt12">${a.events.slice(-12).map(ev => `<div class="tl ${evCls[ev.type] || ''}"><time>${fmtTime(ev.t)}</time>${esc(ev.msg)}</div>`).join('')}</div></div>
+            <details class="card card-pad result-log"><summary><h3 style="font-size:17px">過程紀錄</h3><span class="faint">完整保留作答歷程，防代做</span></summary>
+              <div class="timeline mt12">${a.events.slice(-12).map(ev => `<div class="tl ${evCls[ev.type] || ''}"><time>${fmtTime(ev.t)}</time>${esc(ev.msg)}</div>`).join('')}</div></details>
           </div>
         </div>
 

@@ -57,7 +57,6 @@
       const stateTxt = st.k === 'done' ? `<span class="grade grade-${st.grade} sm">${st.grade}</span>` : st.k === 'working' ? `<span class="q-state" style="color:var(--teal)">進行中 ${icon('arrowRight')}</span>` : t.demo ? `<span class="q-state q-try">試玩 ${icon('arrowRight')}</span>` : t.status === 'open' ? `<span class="q-state">接單 ${icon('arrowRight')}</span>` : t.status === 'soon' ? '<span class="tag tag-warn">即將開放</span>' : '';
       const inner = `<div class="q-stripe"></div><div class="q-body">
           <div class="q-top"><span class="rar">${rar}</span><span class="ticket-id">${t.code}</span></div>
-          ${t.level === 2 ? `<p class="stage-tag">${t.demo ? '第三階段開放・可試玩示範' : '第三階段開放'}</p>` : ''}
           <h3>${esc(t.title)}</h3>
           <div class="q-org">${icon(t.orgType === 'gov' ? 'building' : 'briefcase')}${esc(t.org)}</div>
           <p>${esc(t.summary)}</p>
@@ -157,14 +156,13 @@
     return {
       title: t.title,
       html: `<div class="wrap page">
-        <a class="btn btn-text" href="#/tasks">${icon('arrowLeft')}回公會大廳</a>
-        <div class="detail-grid mt16">
+        <a class="ws-backlink" href="#/tasks">${icon('arrowLeft')}回公會大廳</a>
+        <div class="detail-grid mt12">
           <div class="stack" style="--gap:20px">
             <div class="card card-pad">
-              ${L2 ? `<p class="stage-note">L2 為第三階段規劃，此為示範</p>` : ''}
-              <div class="row"><span class="ticket-id">${t.code}</span>${H.orgTag(t)}<span class="lvl lvl-${t.level}">L${t.level}</span></div>
-              <h1 class="mt12" style="font-size:clamp(22px,3vw,30px)">${APP.ui.heading(t.title)}</h1>
-              <p class="muted mt8">${esc(t.org)}・${esc(t.industry)}・${esc(t.role)}</p>
+              <div class="ws-meta"><span class="ticket-id">${t.code}</span><span class="ws-org">${esc(APP.ORG_TYPES[t.orgType])}</span><span class="ws-org">${L2 ? 'L2 企業挑戰' : `L${t.level} 見習工單`}</span></div>
+              <h1 class="task-h1">${APP.ui.heading(t.title)}</h1>
+              <p class="muted mt8">${esc(t.org)}・${esc(t.role)}</p>
               <div class="prose mt24">
                 <h4>情境</h4><p>${esc(t.story)}</p>
                 <h4>主管交辦</h4>

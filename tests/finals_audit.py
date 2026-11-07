@@ -315,19 +315,20 @@ def audit_finals_two(page, browser):
     page.evaluate("location.hash='#/tasks'")
     page.wait_for_selector('.quests')
     card = page.locator('.quests a[href="#/task/l2-growth"]')
-    assert '第三階段開放・可試玩示範' in card.inner_text()
+    # 第三輪：黃色「第三階段」提示依擁有者要求拿掉；卡片仍標 L2 企業挑戰與試玩。
+    assert 'L2 企業挑戰' in card.inner_text() and '試玩' in card.inner_text()
     assert '已解鎖・企業出題中' not in page.locator('#view').inner_text()
     assert '格子學院' in card.inner_text()
     card.click()
-    page.wait_for_selector('.stage-note')
+    page.wait_for_selector('[data-start]')
     detail = page.locator('#view').inner_text()
-    assert page.locator('.stage-note').inner_text().strip() == 'L2 為第三階段規劃，此為示範'
+    assert page.locator('.stage-note, .stage-tag').count() == 0
     for t in ['完成可得參與津貼（示範）', '成果不得商用', '限 3 小時', '面試邀約', '免費試聽轉付費為什麼掉了？']:
         assert t in detail, t
     page.locator('[data-start]').click()
     page.wait_for_selector('[data-countdown]')
     assert page.locator('[data-countdown]').inner_text().strip().startswith('剩 02:5')
-    assert 'L2 為第三階段規劃，此為示範' in page.locator('#view').inner_text()
+    assert page.locator('.stage-note').count() == 0
     page.locator('[data-skip-timer]').click()
     assert '已跳過計時' in page.locator('[data-countdown]').inner_text()
     run_full_task(page, 'l2-growth')
